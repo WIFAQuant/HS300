@@ -1,5 +1,6 @@
 #%% [markdown]
 # Data Process
+# ## Data Fetching and Storing.
 
 #%%
 import os           # for getting working directory.
@@ -13,21 +14,32 @@ from WindPy import *
 w.start()
 
 #%%
+# Getting the stock list of HS300.
+hs300_stocks_list = list(w.wset(
+    "sectorconstituent", 
+    "date=2019-02-20;windcode=000300.SH", # base on recent date.
+    usedf = True
+)[1]['wind_code'])
+
+#%%
 def data_fetching_and_storing(
     start = "2005-01-01", 
     end = "2019-02-20"
 ):
-    # Getting the stock list of HS300 on end date.
-    hs300_stocks_list = list(w.wset(
-        "sectorconstituent", 
-        "date="+end+";windcode=000300.SH", 
-        usedf = True
-    )[1]['wind_code'])
     # The factor list stores the factor string I need.
     factor_list = [
-        "yoyprofit", 
-        "ps_ttm"
-        "return_1m", 
+        "pe_ttm", 
+        "pb_lyr", 
+        "pcf_ncf_ttm", 
+        "ps_ttm", 
+        "yoyprofit",
+        "yoy_or", 
+        "yoyroe", 
+        "roe_ttm", 
+        "roa_ttm", 
+        "debttoassets", 
+        "assetsturn", 
+        "invturn",  
         "pct_chg", 
         "underlyinghisvol_90d", 
         "tech_turnoverrate20", 
@@ -53,10 +65,17 @@ def data_fetching_and_storing(
 data_fetching_and_storing()
 
 #%%
-zxyj_industry = w.wset(
-    "sectorconstituent",
-    "date=2019-02-21;sectorid=a39901012e000000", 
-    usedf = True
-)[1]
-file_path = path + "\\H3 Data\\zxyj_industry.csv"
-zxyj_industry.to_csv(file_path)
+def sw_industry_data_fetching_and_storing():
+    industry_sw = w.wsd(
+        hs300_stocks_list, 
+        "industry_sw", 
+        "2019-02-20", 
+        "2019-02-20", # set the start and end date as the same.
+        "industryType=1;Period=M",
+        usedf = True 
+    )[1]
+    file_path = path + "\\H3 Data\\industry_sw.csv"
+    industry_sw.to_csv(file_path)
+
+#%%
+sw_industry_data_fetching_and_storing()
