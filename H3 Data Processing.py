@@ -1,11 +1,14 @@
 #%% [markdown]
-# Data Process
-# ## Data Fetching and Storing.
+# # HS300指数纯因子组合构建
+# 
+# # Step 1: Factor Database Building.
 
 #%%
 import os           # for getting working directory.
-import pandas as pd # for wrapping csv file.
 path = os.getcwd()  # current working directory.
+import pandas as pd # for wrapping csv file.
+import numpy as np
+import matplotlib.pyplot as plt
 
 #%%
 # Import Wind Module for getting data.
@@ -84,19 +87,81 @@ sw_industry_data_fetching_and_storing()
 # > Below are process to turn existing excel file into csv file.
 
 #%%
-other_factors_excel_data = pd.ExcelFile(r"C:\\Users\\kaspe\\OneDrive\\Desktop\\Factors.xlsx")
-other_factor_list = other_factors_excel_data.sheet_names
+# other_factors_excel_data = pd.ExcelFile(r"C:\\Users\\kaspe\\OneDrive\\Desktop\\Factors.xlsx")
+# other_factor_list = other_factors_excel_data.sheet_names
 
 #%%
-def convert_excel_to_csv():
-    for factor in other_factor_list:
-        factor_data = pd.read_excel(
-            r"C:\\Users\\kaspe\\OneDrive\\Desktop\\Factors.xlsx", 
-            sheet_name = factor, 
-            index_col = 0 # or pandas will create an index automatically.
+# def convert_excel_to_csv():
+#     for factor in other_factor_list:
+#         factor_data = pd.read_excel(
+#             r"C:\\Users\\kaspe\\OneDrive\\Desktop\\Factors.xlsx", 
+#             sheet_name = factor, 
+#             index_col = 0 # or pandas will create an index automatically.
+#         )
+#         file_path = path + "\\H3 Data\\" + factor + ".csv"
+#         factor_data.to_csv(file_path)
+
+#%%
+# convert_excel_to_csv()
+
+#%% [markdown]
+# # Step 2: Factor Data Processing.
+
+#%%
+def get_data(factor_name): # get data from disk.
+    '''
+    Parameter:
+        factor_name: name of factors in Wind. (str)
+    Return:
+        factor data. (pd.DataFrame)
+            index: months. (np.int64)
+            columns: stocks code list. (str)
+    '''
+    return pd.read_csv(
+        open(
+            path + "\\H3 Data\\" + factor_name + ".csv", 
+            'r', # read-only mode for data protection.
+            encoding = "utf-8"
+        ), 
+        index_col = [0]
+    )
+
+#%% [markdown]
+# ## 2.1 Filter Extreme Value.
+# ## 2.2 Fill Missing Value.
+
+#%%
+class Filter_and_Fill(object):
+    '''
+    Parameters:
+
+    '''
+    def __init__(self, factor_name):
+        data = get_data(factor_name)
+        data.fillna(method = 'ffill', inplace = True) # forward-fill nan.
+        data.fillna(method = 'bfill', inplace = True) # back-fill remained nan.
+        self.data = data
+    
+    def median_absolute_deviation(self, n = 3):
+        median = np.percentile(self.data, 50) # the 50 percentile of the factor.
+        new_median = np.percentile(
+            abs(self.data - median), 
+            50
         )
-        file_path = path + "\\H3 Data\\" + factor + ".csv"
-        factor_data.to_csv(file_path)
+        min_range = median - n * new_median
+        max_range = median + n * new_median
+        return np.clip(self.data, min_range, max_range)
+    
+    def three_sigma(self, n = 3):
+        min_range = self.data.mean() - n * self.data.std()
+        max_range = self.data.mean() + n * self.data.std()
+        return self.data.clip(min_range, max_range, axis = 1)
 
 #%%
-convert_excel_to_csv()
+# e.g. using three sigma and forward fill to clean assetsturn data.
+Filter_and_Fill("assetsturn").three_sigma()
+
+#%% [markdown]
+# ## Risk Factors Neutralization.
+
+#%%
