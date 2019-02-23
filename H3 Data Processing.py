@@ -37,19 +37,19 @@ def data_fetching_and_storing(
         # "pcf_ncf_ttm", 
         # "ps_ttm", 
         # "yoyprofit",
-        "yoy_or", 
-        "yoyroe", 
-        "roe_ttm", 
-        "roa_ttm", 
-        "debttoassets", 
-        "assetsturn", 
-        "invturn",  
+        # "yoy_or", 
+        # "yoyroe", 
+        # "roe_ttm", 
+        # "roa_ttm", 
+        # "debttoassets", 
+        # "assetsturn", 
+        # "invturn",  
         # "pct_chg", 
-        # "underlyinghisvol_90d", 
-        # "tech_turnoverrate20", 
-        # "tech_turnoverrate60", 
-        # "tech_turnoverrate120", 
-        # "val_lnmv"
+        "underlyinghisvol_90d", 
+        "tech_turnoverrate20", 
+        "tech_turnoverrate60", 
+        "tech_turnoverrate120", 
+        "val_lnmv"
     ]
     # Import data from wind and store it as csv.
     for factor in factor_list:
@@ -83,27 +83,6 @@ def sw_industry_data_fetching_and_storing():
 
 #%%
 sw_industry_data_fetching_and_storing()
-
-#%% [markdown]
-# > Below are process to turn existing excel file into csv file.
-
-#%%
-# other_factors_excel_data = pd.ExcelFile(r"C:\\Users\\kaspe\\OneDrive\\Desktop\\Factors.xlsx")
-# other_factor_list = other_factors_excel_data.sheet_names
-
-#%%
-# def convert_excel_to_csv():
-#     for factor in other_factor_list:
-#         factor_data = pd.read_excel(
-#             r"C:\\Users\\kaspe\\OneDrive\\Desktop\\Factors.xlsx", 
-#             sheet_name = factor, 
-#             index_col = 0 # or pandas will create an index automatically.
-#         )
-#         file_path = path + "\\H3 Data\\" + factor + ".csv"
-#         factor_data.to_csv(file_path)
-
-#%%
-# convert_excel_to_csv()
 
 #%% [markdown]
 # # Step 2: Factor Data Processing.
