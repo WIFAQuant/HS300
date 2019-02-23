@@ -115,13 +115,19 @@ def overview(factor_name):
     Return:
         kernel density estimation of factor data.
     '''
+    data = get_data(factor_name)
+    # Collect all non-nan value into data_list.
+    data_list = []
+    for i in range(len(data.columns)): # is there a way to avoid loop?
+        data_list += data.iloc[:, 0].dropna().tolist()
     sns.distplot(
-        get_data(factor_name).dropna().to_numpy().tolist()[0], 
+        data_list, 
         hist = False, 
         rug = True
     )
 
 #%%
+# overview("pe_ttm")
 overview("pb_lyr")
 
 #%% [markdown]
