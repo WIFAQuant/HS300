@@ -26,31 +26,33 @@ hs300_stocks_list = list(w.wset(
 )[1]['wind_code'])
 
 #%%
+# The factor list stores the factor string I need.
+factor_list = [
+    # "pe_ttm", 
+    # "pb_lyr", 
+    # "pcf_ncf_ttm", 
+    # "ps_ttm", 
+    # "yoyprofit",
+    # "yoy_or", 
+    # "yoyroe", 
+    # "roe_ttm", 
+    # "roa_ttm", 
+    # "debttoassets", 
+    # "assetsturn", 
+    # "invturn",  
+    # "pct_chg", 
+    "underlyinghisvol_90d", 
+    "tech_turnoverrate20", 
+    "tech_turnoverrate60", 
+    "tech_turnoverrate120", 
+    "val_lnmv"
+]
+
+#%%
 def data_fetching_and_storing(
     start = "2005-01-01", 
     end = "2019-02-20"
 ):
-    # The factor list stores the factor string I need.
-    factor_list = [
-        # "pe_ttm", 
-        # "pb_lyr", 
-        # "pcf_ncf_ttm", 
-        # "ps_ttm", 
-        # "yoyprofit",
-        # "yoy_or", 
-        # "yoyroe", 
-        # "roe_ttm", 
-        # "roa_ttm", 
-        # "debttoassets", 
-        # "assetsturn", 
-        # "invturn",  
-        # "pct_chg", 
-        "underlyinghisvol_90d", 
-        "tech_turnoverrate20", 
-        "tech_turnoverrate60", 
-        "tech_turnoverrate120", 
-        "val_lnmv"
-    ]
     # Import data from wind and store it as csv.
     for factor in factor_list:
         factor_data = w.wsd(
@@ -127,8 +129,7 @@ def overview(factor_name):
     )
 
 #%%
-# overview("pe_ttm")
-overview("pb_lyr")
+overview("pe_ttm")
 
 #%% [markdown]
 # ## 2.1 Filter Extreme Value.
