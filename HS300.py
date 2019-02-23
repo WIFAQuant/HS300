@@ -2,59 +2,6 @@
 # # HS300指数纯因子组合构建
 # 
 # > WIFA量化组，2019年春。
-# 
-# 依据多因子模型，尝试对沪深300指数构建纯因子组合。
-# 
-# # Step 1：因子数据库构建
-# 
-# > 数据来源为万德金融数据库，通过WindPy API获取。
-# 
-# 因子数据分为*风格因子*和*风险因子*。
-# 
-# 其中风格因子又分为大类因子和细分类因子，最终风格因子会由细分类因子合成。
-# 
-# 风格因子共选取以下7个大类中的19个因子：
-# 
-# - VALUE：EPS_TTM/P、BPS_LR/P、CFPS_TTM/P、SP_TTM/P 
-# - GROWTH：NetProfit_SQ_YOY、Sales_SQ_YOY、ROE_SQ_YOY 
-# - PROFIT：ROE_TTM、ROA_TTM 
-# - QUALITY：Debt2Asset、AssetTurnover、InvTurnover 
-# - MOMENTUM：Ret1M、Ret3M、Ret6M 
-# - VOLATILITY：RealizedVol_3M、RealizedVol_6M 
-# - LIQUIDITY：Turnover_ave_1M、Turnover_ave_3M 
-# 
-# 风险因子选取以下2个大类中的2个因子：
-# 
-# - INDUSTRY：中信一级行业 
-# - SIZE：Ln_MarketValue 
-# 
-# 由于数据限制和平台选择，最终确定的因子和最初选取的因子比较如下：
-# 
-# 最初选取因子|最终确定因子
-# :--:|:--:
-# EPS_TTM/P|PE_TTM
-# BPS_LR/P|PB_LYR
-# CFPS_TTM/P|PCF_NCF_TTM
-# SP_TTM/P|PS_TTM
-# NetProfit_SQ_YOY|YOYPROFIT
-# Sales_SQ_YOY|YOY_OR
-# ROE_SQ_YOY|YOYROE
-# ROE_TTM|ROE_TTM
-# ROA_TTM|ROA_TTM
-# Debt2Asset|DEBTTOASSETS
-# AssetTurnover|ASSETSTURN
-# InvTurnover|INVTURN
-# Ret1M|PCT_CHG
-# Ret3M|PCT_CHG
-# Ret6M|PCT_CHG
-# RealizedVol_3M|UNDERLYINGHISVOL_90D
-# RealizedVol_6M|UNDERLYINGHISVOL_90D
-# Turnover_ave_1M|TECH_TURNOVERRATE20
-# Turnover_ave_3M|TECH_TURNOVERRATE60
-# 中信一级行业列表|INDUSTRY_SW
-# Ln_MarketValue|VAL_LNMV
-# 
-# > 其中“最终确定因子”即为其万德指标字段名。
 
 #%%
 import os             # for getting working directory.
@@ -64,20 +11,13 @@ import numpy as np    # for numerical manipulation.
 import seaborn as sns # for plotting.
 sns.set(style = "darkgrid")
 import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif'] = ['SimHei']
 
 #%%
 # Import Wind Module for getting data.
 import WindPy as w
 from WindPy import *
 w.start()
-
-#%%
-# Getting the stock list of HS300.
-hs300_stocks_list = list(w.wset(
-    "sectorconstituent", 
-    "date=2019-02-20;windcode=000300.SH", # base on recent date.
-    usedf = True
-)[1]['wind_code'])
 
 #%%
 # The factor list stores the factor string I need.
@@ -95,12 +35,21 @@ factor_list = [
     "assetsturn", 
     "invturn",  
     "pct_chg", 
-    "underlyinghisvol_90d", 
-    "tech_turnoverrate20", 
-    "tech_turnoverrate60", 
-    "tech_turnoverrate120", 
-    "val_lnmv"
+    # "underlyinghisvol_90d", 
+    # "tech_turnoverrate20", 
+    # "tech_turnoverrate60", 
+    # "tech_turnoverrate120", 
+    # "val_lnmv"
+    # The last 5 data haven't been downloaded yet for quota exceeded.
 ]
+
+#%%
+# Getting the stock list of HS300.
+hs300_stocks_list = list(w.wset(
+    "sectorconstituent", 
+    "date=2019-02-20;windcode=000300.SH", # base on recent date.
+    usedf = True
+)[1]['wind_code'])
 
 #%%
 def data_fetching_and_storing(
@@ -141,16 +90,7 @@ def sw_industry_data_fetching_and_storing():
 sw_industry_data_fetching_and_storing()
 
 #%% [markdown]
-# 数据保存在“H3 Data” ("HS300 Data" 的缩写) 文件夹中，格式为CSV，直接用全小写的万德指标名命名。
-# 
-# 数据格式如下：
-# - index: 日期（YYYYMMDD）。(numpy.int64)
-# - columns: 股票代号（XXXXXX.XX）。(str)
-# 
-# > 即 "<万德指标名>.csv"，如 "pe_ttm.csv"
-# # Step 2：因子数据处理
-# 
-# 对因子数据进行处理
+# # Step 2：Factor Data Processing.
 
 #%%
 def get_data(factor_name): # get data from disk.
@@ -178,7 +118,7 @@ def overview(factor_name):
     Parameter:
         factor_name: name of factors in Wind. (str)
     Return:
-        kernel density estimation of factor data.
+        histogram distribution plot of factor data.
     '''
     data = get_data(factor_name)
     # Collect all non-nan value into data_list.
@@ -187,19 +127,17 @@ def overview(factor_name):
         data_list += data.iloc[:, i].dropna().tolist()
     sns.distplot(
         data_list, 
-        hist = False, 
-        rug = True
+        # hist = False, 
+        # rug = True
     )
     plt.title(factor_name)
-
-#%% [markdown]
-# 过大或过小的数据会影响到统计分析的结果，所以需要对离群值和极值进行处理。
 
 #%%
 plt.figure(figsize = (10, 10))
 for i in range(9):
     plt.subplot(int("33" + str(i+1)))
     overview(factor_list[i])
+plt.suptitle("不同因子在A股的历史数据分布")
 plt.savefig(path + "\\H3 Plots\\overview.png")
 
 #%% [markdown]
