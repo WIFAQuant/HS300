@@ -4,11 +4,12 @@
 # # Step 1: Factor Database Building.
 
 #%%
-import os           # for getting working directory.
-path = os.getcwd()  # current working directory.
-import pandas as pd # for wrapping csv file.
-import numpy as np
-import matplotlib.pyplot as plt
+import os             # for getting working directory.
+path = os.getcwd()    # current working directory.
+import pandas as pd   # for wrapping csv file.
+import numpy as np    # for numerical manipulation.
+import seaborn as sns # for plotting.
+sns.set(style = "darkgrid")
 
 #%%
 # Import Wind Module for getting data.
@@ -31,11 +32,11 @@ def data_fetching_and_storing(
 ):
     # The factor list stores the factor string I need.
     factor_list = [
-        "pe_ttm", 
-        "pb_lyr", 
-        "pcf_ncf_ttm", 
-        "ps_ttm", 
-        "yoyprofit",
+        # "pe_ttm", 
+        # "pb_lyr", 
+        # "pcf_ncf_ttm", 
+        # "ps_ttm", 
+        # "yoyprofit",
         "yoy_or", 
         "yoyroe", 
         "roe_ttm", 
@@ -43,12 +44,12 @@ def data_fetching_and_storing(
         "debttoassets", 
         "assetsturn", 
         "invturn",  
-        "pct_chg", 
-        "underlyinghisvol_90d", 
-        "tech_turnoverrate20", 
-        "tech_turnoverrate60", 
-        "tech_turnoverrate120", 
-        "val_lnmv"
+        # "pct_chg", 
+        # "underlyinghisvol_90d", 
+        # "tech_turnoverrate20", 
+        # "tech_turnoverrate60", 
+        # "tech_turnoverrate120", 
+        # "val_lnmv"
     ]
     # Import data from wind and store it as csv.
     for factor in factor_list:
@@ -125,6 +126,24 @@ def get_data(factor_name): # get data from disk.
         ), 
         index_col = [0]
     )
+
+#%%
+# Get an overview of the data.
+def overview(factor_name):
+    '''
+    Parameter:
+        factor_name: name of factors in Wind. (str)
+    Return:
+        kernel density estimation of factor data.
+    '''
+    sns.distplot(
+        get_data(factor_name).dropna().to_numpy().tolist()[0], 
+        hist = False, 
+        rug = True
+    )
+
+#%%
+overview("pb_lyr")
 
 #%% [markdown]
 # ## 2.1 Filter Extreme Value.
