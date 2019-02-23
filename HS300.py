@@ -55,14 +55,6 @@
 # Ln_MarketValue|VAL_LNMV
 # 
 # > 其中“最终确定因子”即为其万德指标字段名。
-# 
-# 数据保存在“H3 Data” ("HS300 Data" 的缩写) 文件夹中，格式为CSV，直接用全小写的万德指标名命名。
-# 
-# 数据格式如下：
-# - index: 日期（YYYYMMDD）。(numpy.int64)
-# - columns: 股票代号（XXXXXX.XX）。(str)
-# 
-# > 即 "<万德指标名>.csv"，如 "pe_ttm.csv"
 
 #%%
 import os             # for getting working directory.
@@ -149,7 +141,16 @@ def sw_industry_data_fetching_and_storing():
 sw_industry_data_fetching_and_storing()
 
 #%% [markdown]
-# # Step 2: Factor Data Processing.
+# 数据保存在“H3 Data” ("HS300 Data" 的缩写) 文件夹中，格式为CSV，直接用全小写的万德指标名命名。
+# 
+# 数据格式如下：
+# - index: 日期（YYYYMMDD）。(numpy.int64)
+# - columns: 股票代号（XXXXXX.XX）。(str)
+# 
+# > 即 "<万德指标名>.csv"，如 "pe_ttm.csv"
+# # Step 2：因子数据处理
+# 
+# 对因子数据进行处理
 
 #%%
 def get_data(factor_name): # get data from disk.
@@ -190,6 +191,9 @@ def overview(factor_name):
         rug = True
     )
     plt.title(factor_name)
+
+#%% [markdown]
+# 过大或过小的数据会影响到统计分析的结果，所以需要对离群值和极值进行处理。
 
 #%%
 plt.figure(figsize = (10, 10))
