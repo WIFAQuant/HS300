@@ -4,20 +4,15 @@
 # > WIFA量化组，2019年春。
 
 #%%
-import os             # for getting working directory.
-path = os.getcwd()    # current working directory.
-import pandas as pd   # for wrapping csv file.
-import numpy as np    # for numerical manipulation.
-import seaborn as sns # for plotting.
-sns.set(style = "darkgrid")
-import matplotlib.pyplot as plt
-plt.rcParams['font.sans-serif'] = ['SimHei']
-
-#%%
-# Import Wind Module for getting data.
-import WindPy as w
-from WindPy import *
-w.start()
+import os                                    # for getting working directory.
+path = os.getcwd()                           # current working directory.
+import pandas as pd                          # for wrapping csv file.
+import numpy as np                           # for numerical manipulation.
+import seaborn as sns                        # for plotting.
+sns.set(style = "darkgrid")                  # set seaborn style.
+import matplotlib.pyplot as plt              # specify "plt".
+plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
+plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
 
 #%%
 # The factor list stores the factor string I need.
@@ -42,52 +37,6 @@ factor_list = [
     # "val_lnmv"
     # The last 5 data haven't been downloaded yet for quota exceeded.
 ]
-
-#%%
-# Getting the stock list of HS300.
-hs300_stocks_list = list(w.wset(
-    "sectorconstituent", 
-    "date=2019-02-20;windcode=000300.SH", # base on recent date.
-    usedf = True
-)[1]['wind_code'])
-
-#%%
-def data_fetching_and_storing(
-    start = "2005-01-01", 
-    end = "2019-02-20"
-):
-    # Import data from wind and store it as csv.
-    for factor in factor_list:
-        factor_data = w.wsd(
-            hs300_stocks_list, 
-            factor, 
-            start, 
-            end, 
-            "Period=M", 
-            usedf = True # use pandas dataframe.
-        )[1]             # the result is a tuple with the [1] part is what we need.
-        # Make a new directory (H3 Data) for storing data.
-        file_path = path + "\\H3 Data\\" + factor + ".csv" # name the data file by it's factor string.
-        factor_data.to_csv(file_path)                      # store data.
-
-#%%
-data_fetching_and_storing()
-
-#%%
-def sw_industry_data_fetching_and_storing():
-    industry_sw = w.wsd(
-        hs300_stocks_list, 
-        "industry_sw", 
-        "2019-02-20", 
-        "2019-02-20", # set the start and end date as the same.
-        "industryType=1;Period=M",
-        usedf = True 
-    )[1]
-    file_path = path + "\\H3 Data\\industry_sw.csv"
-    industry_sw.to_csv(file_path)
-
-#%%
-sw_industry_data_fetching_and_storing()
 
 #%% [markdown]
 # # Step 2：Factor Data Processing.
@@ -121,18 +70,22 @@ def overview(factor_name):
         histogram distribution plot of factor data.
     '''
     data = get_data(factor_name)
+    # Forward-fill nan to make quarter report fill the month.
+    data.fillna(method = 'ffill', inplace = True) 
     # Collect all non-nan value into data_list.
-    data_list = []
-    for i in range(len(data.columns)): # is there a way to avoid loop?
-        data_list += data.iloc[:, i].dropna().tolist()
+    value_list = []
+    for i in range(len(data.columns)): 
+        # is there a way to avoid loop?
+        value_list += data.iloc[:, i].dropna().tolist()
     sns.distplot(
-        data_list, 
+        value_list, 
         # hist = False, 
         # rug = True
     )
     plt.title(factor_name)
 
 #%%
+# Get an overview of 9 of the factors histogram distribution plot.
 plt.figure(figsize = (10, 10))
 for i in range(9):
     plt.subplot(int("33" + str(i+1)))
@@ -142,22 +95,24 @@ plt.savefig(path + "\\H3 Plots\\overview.png")
 
 #%% [markdown]
 # ## 2.1 Filter Extreme Value.
-# ## 2.2 Fill Missing Value.
 
 #%%
-class Filter_and_Fill(object):
+class Filter(object):
     '''
     Parameters:
-
+        factor_name: name of factors in Wind. (str)
     '''
     def __init__(self, factor_name):
         data = get_data(factor_name)
-        data.fillna(method = 'ffill', inplace = True) # forward-fill nan.
-        data.fillna(method = 'bfill', inplace = True) # back-fill remained nan.
+        data.fillna(method = 'ffill', inplace = True) 
+        value_list = []
+        for i in range(len(data.columns)):
+            value_list += data.iloc[:, i].dropna().tolist()
         self.data = data
+        self.values = value_list
     
     def median_absolute_deviation(self, n = 3):
-        median = np.percentile(self.data, 50) # the 50 percentile of the factor.
+        median = np.percentile(self.values, 50) # the 50 percentile of the factor.
         new_median = np.percentile(
             abs(self.data - median), 
             50
@@ -172,8 +127,13 @@ class Filter_and_Fill(object):
         return self.data.clip(min_range, max_range, axis = 1)
 
 #%%
-# e.g. using three sigma and forward fill to clean assetsturn data.
-Filter_and_Fill("assetsturn").three_sigma()
+# Get an overview of MAD method filtering.
+plt.figure(figsize = (10, 10))
+for i in range(9):
+    plt.subplot(int("33" + str(i+1)))
+    overview(factor_list[i])
+plt.suptitle("不同因子在A股的历史数据分布")
+plt.savefig(path + "\\H3 Plots\\overview.png")
 
 #%% [markdown]
 # ## Risk Factors Neutralization.

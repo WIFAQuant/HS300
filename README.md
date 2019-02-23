@@ -87,7 +87,10 @@ Ln_MarketValue|VAL_LNMV
 2. 3σ法
 3. 百分位法
 
+### 2.1.1 MAD法 (Median Absolute Deviation)
+
+取因子的中位数，加减每个因子与该中位数的绝对偏差值的中位数乘上给定参数得到上下阈值。
+
 
 
 ## 2.2 填补缺失值
-
