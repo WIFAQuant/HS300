@@ -36,8 +36,8 @@ SP_TTM/P|PS_TTM|市销率
 NetProfit_SQ_YOY|YOYPROFIT|净利润同比增长率
 Sales_SQ_YOY|YOY_OR|营业收入同比增长率
 ROE_SQ_YOY|YOYROE|净资产收益率同比增长率
-ROE_TTM|ROE_TTM|净资产收益率
-ROA_TTM|ROA_TTM|总资产净利率
+ROE_TTM|ROE_TTM2|净资产收益率
+ROA_TTM|ROA_TTM2|总资产净利率
 Debt2Asset|DEBTTOASSETS|资产负债率
 AssetTurnover|ASSETSTURN|总资产周转率
 InvTurnover|INVTURN|存货周转率
