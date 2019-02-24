@@ -264,5 +264,87 @@ for i in ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY
 Large_factor = pd.Panel(Factor_dict)
 # when you want to use one factor,you can edit'Large_factor[the name of the factor]'
 
-#我改啦
+
+# ###############################################################################################################
+# STEP 5
+# 假设了之前很多回归的计算结果
+from scipy.optimize import minimize
+All_Factors = ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE']
+Factor_income =pd.DataFrame(-1+2*np.random.random((170,9)),columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE'],
+                            index = get_data('ps_ttm').index)
+Stock_predict = pd.DataFrame(-0.1+np.random.random((300,1))/3,columns=['yeild_forecast'],index = get_data('ps_ttm').columns)
+Factor_predict = pd.DataFrame(-0.1+np.random.random((300,9))/3,columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE'],index = get_data('ps_ttm').columns)
+#每只股票的在不同时间点的残差，可以等于实际的股票收益率-预测的股票收益率
+Stock_Residual = pd.DataFrame(-0.1+np.random.random((170,300))/5,columns = get_data('ps_ttm').columns,index = get_data('ps_ttm').index)
+
+
+class Portfolio_Optimization(object):
+    def __init__(self, Target_factors ,time_window):
+        self.Target_factors = Target_factors
+        self.time_window = time_window
+
+    def Factor_covariance(self):
+        factors = Factor_income.iloc[-self.time_window:]
+        Cov = np.cov(factors.values.T)
+        return Cov
+
+    # 预测残差风险这一部分很复杂，用到半衰期权重和贝叶斯收缩，和波动性调整，其实不约束风险时，不用计算此项，先把框架搭起来，
+    # 后面计算组合的夏普比率要用到组合方差，就要用到残差风险，后续研究我们再仔细研究这一部分具体怎么算
+    def Trait_risk_forecast(self):
+        Res = pd.DataFrame(-0.1+np.random.random((300,300))/5)
+        return Res
+
+    def optimization(self):
+        Cov = self.Factor_covariance()
+        Res = self.Trait_risk_forecast()
+        yeild_T_1 = Stock_predict
+
+        #非线性规划
+        x0 = np.random.rand(300)
+        x0 /= sum(x0)
+        Non_target_factors = list(set(All_Factors) ^ set(self.Target_factors))
+        n = len(Non_target_factors)
+        m = list(range(n))
+        b = [0]*9
+        b[0:n-1] = m
+        # 此处我尝试了各种方法，用i遍历非目标纯因子然后生成条件，但是生成的条件在优化模型中没有被成功约束，最后只能全部写出来9个因子条件，
+        # 对于目标纯因子，序数取的0，即条件是重复的非目标因子约束，这里的条件数据类型是tuple，tuple不能被增加，我试过先用list添加然后转为tuple,
+        # 仍然没有被成功识别，如果有更简便的方法，欢迎提出
+        # 最小化的函数
+        func = lambda x: -(yeild_T_1 * np.mat(x).T).sum()[0]
+        cons4 = ({'type': 'eq', 'fun': lambda x: x.sum() - 1},
+                 {'type': 'ineq','fun': lambda x:(0.03-abs((Factor_predict[[Non_target_factors[b[0]]]]*np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq', 'fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[1]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq', 'fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[2]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq', 'fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[3]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq', 'fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[4]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[5]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[6]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[7]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[8]]]] * np.mat(x).T).sum()[0]))},
+                 )
+        # 如果要添加波动性约束，条件要改为以下，我写的是限制波动小于3%
+        '''cons4 = ({'type': 'eq', 'fun': lambda x: x.sum() - 1},
+                 {'type': 'ineq','fun': lambda x: (0.03 -((np.mat(Factor_predict).T*np.mat(x).T).T*Cov*(np.mat(Factor_predict).T*np.mat(x).T))[0,0]
+                                    +(np.mat(x)*np.mat(Res)*np.mat(x).T))[0,0]},
+                {'type': 'ineq', 'fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[0]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[1]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[2]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[3]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[4]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[5]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[6]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[7]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[8]]]] * np.mat(x).T).sum()[0]))},
+                 )'''
+        c = (0,1)
+        bnds = tuple([c]*300)#边界条件为0-1
+        res = minimize(func, x0, method='SLSQP', constraints=cons4,bounds = bnds)
+        Stock_weight = pd.DataFrame(res.x,columns=['Portfolio Weight'],index = Stock_predict.index)
+        return  Stock_weight, -res.fun
+
+# 目标纯因子为'VALUE','GROWTH','PROFIT'，使用历史时间段为过去32个月，仅对非目标纯因子偏离做约束条件，最大化收益，返回权重和组合收益
+[Stock_weight,Portfolio_Return]= Portfolio_Optimization(['VALUE','GROWTH','PROFIT'],32).optimization()
+
+
 
