@@ -82,4 +82,6 @@ def sw_industry_data_fetching_and_storing():
 
 #%%
 data_fetching_and_storing()
+
+#%%
 sw_industry_data_fetching_and_storing()

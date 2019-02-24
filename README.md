@@ -155,9 +155,9 @@ data.fillna(method = 'ffill', inplace = True)
 > 
 > 这是由于过多超出上下阈值的数据被迫调整为上下阈值，导致阈值处的数据分布特别密集。
 
-但在大多数情况下（数据分布相对均匀时，此处以ROE为例），各种方法与原始数据相差不大。（如下图：ROE数据的原始数据及分别经过三种去极值方法处理后的分布图👇）
+但在大多数情况下（数据分布相对均匀时，此处以ROE为例），各种方法以及原始数据相差不大。（如下图：资产周转率数据的原始数据及分别经过三种去极值方法处理后的分布图👇）
 
-![Comparison(roe_ttm).png](https://i.loli.net/2019/02/24/5c72160804bbb.png)
+![Comparison(assetsturn).png](https://i.loli.net/2019/02/24/5c7290ae9f0be.png)
 
 经过比较研究，我们最终选取阈值选取相对最为合理，较少阈值异常“突起”，同时保留较宽值域的**参数值为100的MAD法**进行去极值处理。
 
@@ -192,7 +192,7 @@ data.fillna(method = 'ffill', inplace = True)
 
 （如下图为经过去极值、标准化处理后的数据密度分布图一览👇）
 
-![Processed Data.png](https://storage.live.com/items/A3FA4B9C0717EA26!53797?authkey=AH5Re-C6ttiO_oc)
+![Processed Data.png](https://i.loli.net/2019/02/24/5c7291ceea91d.png)
 
 ## 2.4 中性化
 

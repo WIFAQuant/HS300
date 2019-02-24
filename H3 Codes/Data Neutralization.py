@@ -19,8 +19,8 @@ factor_list = [
     "yoyprofit",
     "yoy_or", 
     "yoyroe", 
-    "roe_ttm", 
-    "roa_ttm", 
+    # "roe_ttm",  # weired
+    # "roa_ttm",  # weired
     "debttoassets", 
     "assetsturn", 
     "invturn",  
@@ -53,3 +53,8 @@ def get_processed_data(factor_name): # get data from disk.
         index_col = [0]
     )
     return data
+
+#%%
+get_processed_data("roe_ttm").head()
+
+#%%

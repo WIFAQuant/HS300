@@ -19,8 +19,8 @@ factor_list = [
     "yoyprofit",
     "yoy_or", 
     "yoyroe", 
-    "roe_ttm", 
-    "roa_ttm", 
+    # "roe_ttm",  # weired
+    # "roa_ttm",  # weired
     "debttoassets", 
     "assetsturn", 
     "invturn",  
@@ -224,20 +224,20 @@ plt.savefig(path + "\\H3 Plots\\Comparison(pcf_ncf_ttm).png")
 #%%
 plt.figure(figsize = (8, 5))
 sns.distplot(get_values(
-    data = Filter("roe_ttm").original()
+    data = Filter("assetsturn").original()
 ), label = "Original")
 sns.distplot(get_values(
-    data = Filter("roe_ttm").MAD()
+    data = Filter("assetsturn").MAD()
 ), label = "MAD")
 sns.distplot(get_values(
-    data = Filter("roe_ttm").three_sigma()
+    data = Filter("assetsturn").three_sigma()
 ), label = "3σ")
 sns.distplot(get_values(
-    data = Filter("roe_ttm").percentile_filter()
+    data = Filter("assetsturn").percentile_filter()
 ), label = "Percentile")
 plt.legend()
-plt.title("不同去极值方法的比较（以ROE为例）")
-plt.savefig(path + "\\H3 Plots\\Comparison(roe_ttm).png")
+plt.title("不同去极值方法的比较（以资产周转率为例）")
+plt.savefig(path + "\\H3 Plots\\Comparison(assetsturn).png")
 
 #%% [markdown]
 # ## 2.3 standardize
