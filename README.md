@@ -27,29 +27,29 @@
 
 由于数据限制和平台选择，最终确定的因子和最初选取的因子比较如下：
 
-最初选取因子|最终确定因子
-:--:|:--:
-EPS_TTM/P|PE_TTM
-BPS_LR/P|PB_LYR
-CFPS_TTM/P|PCF_NCF_TTM
-SP_TTM/P|PS_TTM
-NetProfit_SQ_YOY|YOYPROFIT
-Sales_SQ_YOY|YOY_OR
-ROE_SQ_YOY|YOYROE
-ROE_TTM|ROE_TTM
-ROA_TTM|ROA_TTM
-Debt2Asset|DEBTTOASSETS
-AssetTurnover|ASSETSTURN
-InvTurnover|INVTURN
-Ret1M|PCT_CHG
-Ret3M|PCT_CHG
-Ret6M|PCT_CHG
-RealizedVol_3M|UNDERLYINGHISVOL_90D
-RealizedVol_6M|UNDERLYINGHISVOL_90D
-Turnover_ave_1M|TECH_TURNOVERRATE20
-Turnover_ave_3M|TECH_TURNOVERRATE60
-中信一级行业列表|INDUSTRY_SW
-Ln_MarketValue|VAL_LNMV
+最初选取因子|最终确定因子|因子解释
+:--:|:--:|:--:
+EPS_TTM/P|PE_TTM|市盈率
+BPS_LR/P|PB_LYR|市净率
+CFPS_TTM/P|PCF_NCF_TTM|市现率（现金净流量）
+SP_TTM/P|PS_TTM|市销率
+NetProfit_SQ_YOY|YOYPROFIT|净利润同比增长率
+Sales_SQ_YOY|YOY_OR|营业收入同比增长率
+ROE_SQ_YOY|YOYROE|净资产收益率同比增长率
+ROE_TTM|ROE_TTM|净资产收益率
+ROA_TTM|ROA_TTM|总资产净利率
+Debt2Asset|DEBTTOASSETS|资产负债率
+AssetTurnover|ASSETSTURN|总资产周转率
+InvTurnover|INVTURN|存货周转率
+Ret1M|PCT_CHG|涨跌幅
+Ret3M|PCT_CHG|涨跌幅
+Ret6M|PCT_CHG|涨跌幅
+RealizedVol_3M|UNDERLYINGHISVOL_90D|90日历史波动率
+RealizedVol_6M|UNDERLYINGHISVOL_90D|90日历史波动率
+Turnover_ave_1M|TECH_TURNOVERRATE20|20日平均换手率
+Turnover_ave_3M|TECH_TURNOVERRATE60|60日平均换手率
+中信一级行业列表|INDUSTRY_SW|申万行业名称
+Ln_MarketValue|VAL_LNMV|对数市值
 
 > （注：Ret1M, Ret3M, Ret6M皆由PCT_CHG合成；RealizedVol_3M, RealizedVol_6M皆由UNDERLYINGHISVOL_90D代替。） 
 >
@@ -200,9 +200,20 @@ data.fillna(method = 'ffill', inplace = True)
 
 根据某些因子（指标）选股的时候，由于某些因子之间具有较强的相关性，故时常会有我们不希望看到的“**偏向**”，导致投资组合不够分散。
 
-以市净率为例，沪深300股票指数中共包含17个行业（根据申万一级行业分类），统计沪深300中各行业的市净率平均值，如下图所示👇。
+沪深300股票指数中共包含17个行业（根据申万一级行业分类），以沪深300中各个行业以下四个指标：
+
+- 市现率
+- 净利润同比增长率
+- 净资产收益率同比增长率
+- 存货周转率
+
+为例，分别统计其各行业平均值，如下图所示👇。
 
 ![Industry Comparison.png](https://i.loli.net/2019/02/24/5c72a95c76124.png)
 
-从图中可以看到，不同行业的市净率相差近十倍（有色金属行业 V.S. 电气设备行业）。那么依据市净率因子选取出的股票必然对平均市净率高的行业有偏向，故我们希望对因子进行行业中性化。（同理，我们也希望对市值进行中性化。）
+从图中可以看到，不同行业的不同指标相差从十倍、到千倍都有。
+
+> *有色金属行业的平均市现率是家用电器行业的负十八万倍。*
+
+那么依据市净率因子选取出的股票必然对平均市净率高的行业有偏向，故我们希望对因子进行行业中性化。（同理，我们也希望对市值进行中性化。）
 

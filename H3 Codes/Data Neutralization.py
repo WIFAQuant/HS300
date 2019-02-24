@@ -136,3 +136,13 @@ def plot_industry_comparison():
 plot_industry_comparison()
 
 #%%
+print(round(
+    industry_comparison("pcf_ncf_ttm").loc["有色金属", "pcf_ncf_ttm"] /  
+    industry_comparison("pcf_ncf_ttm").loc["家用电器", "pcf_ncf_ttm"] , 
+    0
+))
+
+#%%
+industry_comparison("pcf_ncf_ttm").loc["有色金属", "pcf_ncf_ttm"]
+
+#%%
