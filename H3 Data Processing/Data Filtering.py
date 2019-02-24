@@ -53,7 +53,8 @@ def get_data(factor_name): # get data from disk.
     '''
     data = pd.read_csv(
         open(
-            path + "\\H3 Data\\" + factor_name + ".csv", 
+            # Extract raw data.
+            path + "\\H3 Data\\Raw Data\\" + factor_name + ".csv", 
             'r', # read-only mode for data protection.
             encoding = "utf-8"
         ), 
@@ -243,4 +244,6 @@ plt.savefig(path + "\\H3 Plots\\Comparison(roe_ttm).png")
 
 #%%
 for factor in factor_list:
-    
+    filtered_data = Filter(factor).MAD()
+    file_path = path + "\\H3 Data\\Filtered Data\\" + factor + ".csv"
+    filtered_data.to_csv(file_path)

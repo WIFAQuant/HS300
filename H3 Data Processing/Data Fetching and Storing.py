@@ -64,7 +64,7 @@ def data_fetching_and_storing(
             usedf = True # use pandas dataframe.
         )[1]             # the result is a tuple with the [1] part is what we need.
         # Make a new directory (H3 Data) for storing data.
-        file_path = path + "\\H3 Data\\" + factor + ".csv" # name the data file by it's factor string.
+        file_path = path + "\\H3 Data\\Raw Data\\" + factor + ".csv" # name the data file by it's factor string.
         factor_data.to_csv(file_path)                      # store data.
 
 #%%
@@ -77,7 +77,7 @@ def sw_industry_data_fetching_and_storing():
         "industryType=1;Period=M",
         usedf = True 
     )[1]
-    file_path = path + "\\H3 Data\\industry_sw.csv"
+    file_path = path + "\\H3 Data\\Raw Data\\industry_sw.csv"
     industry_sw.to_csv(file_path)
 
 #%%
