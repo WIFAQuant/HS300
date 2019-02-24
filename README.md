@@ -89,8 +89,50 @@ Ln_MarketValue|VAL_LNMV
 
 ### 2.1.1 MAD法 (Median Absolute Deviation)
 
-取因子的中位数，加减每个因子与该中位数的绝对偏差值的中位数乘上给定参数得到上下阈值。
+取因子的中位数，加减每个因子与该中位数的绝对偏差值的中位数乘上给定参数（此处经过调参设定默认为100倍）得到上下阈值。
 
+经过MAD法去极值后的因子数据概览如下：
 
+![MAD.png](https://storage.live.com/items/A3FA4B9C0717EA26!53689?authkey=AH5Re-C6ttiO_oc)
+
+### 2.1.2 3σ法
+
+取所有因子数据的标准差（即σ），偏离平均值三倍标准差处设为上下阈值。
+
+经过3σ法去极值后的因子数据概览如下：
+
+![3σ.png](https://storage.live.com/items/A3FA4B9C0717EA26!53690?authkey=AH5Re-C6ttiO_oc)
+
+### 2.1.3 百分位法
+
+取给定百分位作为上下阈值。（此处经过调参设定为下限1.5%，上限98.5%分位点）
+
+经过百分位法去极值后的因子数据概览如下：
+
+![percentile.png](https://storage.live.com/items/A3FA4B9C0717EA26!53691?authkey=AH5Re-C6ttiO_oc)
+
+### 2.1.4 去极值研究。
+
+实际上，三种主流方法即使经过调参尽可能地使其结果接近并不出现过于集中的阈值，仍然有可能出现非常显著不同的效果。
+
+以每股现金流为例，将原始数据和三种去极值的方法处理后的因子数据放在同一张图里，由于值域相差太大，甚至根本无法从图中找到不同的方法对应的图表。
+
+![Comparison(pcf_ncf_ttm).png](https://i.loli.net/2019/02/24/5c7215995823d.png)
+
+究其原因，是其原本数据的集中度就非常高，以至于不同方法去极值计算出相差甚远的阈值。
+
+![original pcf_ncf_ttm.png](https://storage.live.com/items/A3FA4B9C0717EA26!53692?authkey=AH5Re-C6ttiO_oc)
+
+所以经过百分位去极值后，尽管值域缩小了近6000倍，但仍然非常集中。
+
+并且这种离差过大的数据去极值的时候还会出现一个问题：造成阈值部分出现异常高的“虚假”数据，而这是我们不愿意看到的。👇
+
+![percentile filter pcf_ncf_ttm.png](https://storage.live.com/items/A3FA4B9C0717EA26!53693?authkey=AH5Re-C6ttiO_oc)
+
+> 注意[-1000, 1000]处的“突起”。
+
+但在大多数情况下（数据分布相对均匀时，此处以ROE为例），各种方法与原始数据相差不大。
+
+![Comparison(roe_ttm).png](https://i.loli.net/2019/02/24/5c72160804bbb.png)
 
 ## 2.2 填补缺失值
