@@ -1,8 +1,3 @@
-#%% [markdown]
-# # HS300指数纯因子组合构建
-# 
-# > WIFA量化组，2019年春。
-
 #%%
 import os                                    # for getting working directory.
 path = os.getcwd()                           # current working directory.
@@ -257,9 +252,10 @@ def standardize(factor_name):
         standardized and Filtered (MAD) data. (pd.DataFrame)
     '''
     data = Filter(factor_name).MAD()
+    data.fillna(0, inplace = True)
     mean = np.mean(data)
     std = np.std(data)
-    return (data - mean) / std    
+    return (data - mean) / std
 
 #%%
 for factor in factor_list:

@@ -51,21 +51,23 @@ Turnover_ave_3M|TECH_TURNOVERRATE60
 中信一级行业列表|INDUSTRY_SW
 Ln_MarketValue|VAL_LNMV
 
-> 数据来源为万德金融数据库，通过WindPy API获取。
+> （注：Ret1M, Ret3M, Ret6M皆由PCT_CHG合成；RealizedVol_3M, RealizedVol_6M皆由UNDERLYINGHISVOL_90D代替。） 
 >
-> 获取与存储数据的代码详见“H3 Codes/Data Fetching and Storing.py” 文件。
-> 
-> 获取的原始数据储存在"H3 Data/Raw Data"文件夹里。
+> 数据来源为万德金融数据库，通过WindPy API获取。
 > 
 > 其中“最终确定因子”列即为其万德指标字段名。
 >
-> 数据保存在“H3 Data” ("HS300 Data" 的缩写) 文件夹中，格式为CSV，直接用全小写的万德指标名命名。
-> 即 "<万德指标名>.csv"，如 "pe_ttm.csv"
+> （数据保存在“H3 Data” ("HS300 Data" 的缩写) 文件夹中，格式为CSV，直接用全小写的万德指标名命名。
+> 即 "<万德指标名>.csv"，如 "pe_ttm.csv"）
 > 
-> 数据格式如下：
-> 行/列 | 股票代号（000001.SZ）
->  :--|--:
->  交易日期（YYYYMMDD） | 相应因子暴露
+> - 获取与存储数据的代码详见“H3 Codes/Data Fetching and Storing.py” 文件。
+> 
+> - 获取的原始数据储存在"H3 Data/Raw Data"文件夹里。
+>
+数据格式如下：
+行/列 | 股票代号（000001.SZ）
+:--|--:
+交易日期（YYYYMMDD） | 相应因子暴露
 
 
 # Step 2：因子数据处理
@@ -157,7 +159,7 @@ data.fillna(method = 'ffill', inplace = True)
 
 ![Comparison(roe_ttm).png](https://i.loli.net/2019/02/24/5c72160804bbb.png)
 
-经过比较研究，我们最终选取**参数值为100的MAD法**进行去极值处理。
+经过比较研究，我们最终选取阈值选取相对最为合理，较少阈值异常“突起”，同时保留较宽值域的**参数值为100的MAD法**进行去极值处理。
 
 ## 2.3 标准化
 
@@ -180,11 +182,13 @@ data.fillna(method = 'ffill', inplace = True)
 - 均值为0
 - 标准差为1
 
-我们最终选取对原始因子值进行标准化(z-score)的方法进行标准化。
+由于已经对数据进行去极值处理，我们最终选取对原始因子值进行标准化(z-score)的方法进行标准化。
 
-> 数据处理部分的代码详见“H3 Codes/Data Processing.py” 文件。
+> 2.1， 2.2， 2.3的数据处理部分的：
 > 
-> 经过去极值、标准化处理后的的数据保存在"H3 Data/Processed Data"文件夹里。
+> - 代码详见“H3 Codes/Data Processing.py” 文件。
+> 
+> - 数据保存在"H3 Data/Processed Data"文件夹里。
 
 （如下图为经过去极值、标准化处理后的数据密度分布图一览👇）
 
