@@ -53,7 +53,7 @@ Ln_MarketValue|VAL_LNMV
 
 > 数据来源为万德金融数据库，通过WindPy API获取。
 >
-> 获取与存储数据的代码详见“H3 Data Processing/Data Fetching and Storing.py” 文件。
+> 获取与存储数据的代码详见“H3 Codes/Data Fetching and Storing.py” 文件。
 > 
 > 其中“最终确定因子”列即为其万德指标字段名。
 >
@@ -139,7 +139,7 @@ Ln_MarketValue|VAL_LNMV
 
 经过比较研究，我们最终选取参数值为100的MAD法进行去极值处理。
 
-> 去极值数据处理的代码详见“H3 Data Processing/Data Filtering.py” 文件。
+> 去极值数据处理的代码详见“H3 Codes/Data Filtering.py” 文件。
 
 ## 2.2 填补缺失值
 
