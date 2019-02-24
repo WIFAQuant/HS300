@@ -40,6 +40,8 @@ factor_list = [
 
 #%% [markdown]
 # # Step 2：Factor Data Processing.
+# 
+# ## 2.1 Filtering & 2.2 Filling
 
 #%%
 def get_data(factor_name): # get data from disk.
@@ -97,7 +99,7 @@ plt.savefig(path + "\\H3 Plots\\overview.png")
 #%%
 class Filter(object):
     '''
-    Parameters:
+    Parameter:
         factor_name: name of factors in Wind. (str)
     '''
     def __init__(self, factor_name):
@@ -242,8 +244,58 @@ plt.legend()
 plt.title("不同去极值方法的比较（以ROE为例）")
 plt.savefig(path + "\\H3 Plots\\Comparison(roe_ttm).png")
 
+#%% [markdown]
+# ## 2.3 standardize
+
+#%%
+# Use z-score method to standardize.
+def standardize(factor_name):
+    '''
+    Parameter:
+        factor_name: name of factors in Wind. (str)
+    Return:
+        standardized and Filtered (MAD) data. (pd.DataFrame)
+    '''
+    data = Filter(factor_name).MAD()
+    mean = np.mean(data)
+    std = np.std(data)
+    return (data - mean) / std    
+
 #%%
 for factor in factor_list:
-    filtered_data = Filter(factor).MAD()
-    file_path = path + "\\H3 Data\\Filtered Data\\" + factor + ".csv"
-    filtered_data.to_csv(file_path)
+    processed_data = standardize(factor)
+    file_path = path + "\\H3 Data\\Processed Data\\" + factor + ".csv"
+    processed_data.to_csv(file_path)
+
+#%%
+def get_processed_data(factor_name): # get data from disk.
+    '''
+    Parameter:
+        factor_name: name of factors in Wind. (str)
+    Return:
+        processed factor data. (pd.DataFrame)
+            index: months. (np.int64)
+            columns: stocks code list. (str)
+    '''
+    data = pd.read_csv(
+        open(
+            # Extract raw data.
+            path + "\\H3 Data\\Processed Data\\" + factor_name + ".csv", 
+            'r', # read-only mode for data protection.
+            encoding = "utf-8"
+        ), 
+        index_col = [0]
+    )
+    return data
+
+#%%
+# Get an overview of processed data.
+plt.figure(figsize = (10, 10))
+for i in range(9):
+    plt.subplot(int("33" + str(i+1)))
+    sns.distplot(get_values(
+        data = get_processed_data(factor_list[i])
+    ))
+    plt.title(factor_list[i])
+plt.suptitle("经过处理后的A股因子数据密度分布图一览")
+plt.savefig(path + "\\H3 Plots\\Processed Data.png")
