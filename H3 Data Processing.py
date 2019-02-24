@@ -240,3 +240,5 @@ sns.distplot(get_values(
 plt.legend()
 plt.title("不同去极值方法的比较（以ROE为例）")
 plt.savefig(path + "\\H3 Plots\\Comparison(roe_ttm).png")
+
+#%%
