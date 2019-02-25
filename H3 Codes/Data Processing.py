@@ -320,7 +320,7 @@ def standardize(factor_name):
         standardized and Filtered (MAD) data. (pd.DataFrame)
     '''
     data = Filter(factor_name).MAD()
-    data.fillna(0, inplace = True)
+    data = data.fillna(0)
     mean = np.mean(data)
     std = np.std(data)
     return (data - mean) / std
@@ -352,7 +352,6 @@ def get_processed_data(factor_name): # get data from disk.
     '''
     data = pd.read_csv(
         open(
-            # Extract raw data.
             path + "\\H3 Data\\Processed Data\\" + factor_name + ".csv", 
             'r', # read-only mode for data protection.
             encoding = "utf-8"

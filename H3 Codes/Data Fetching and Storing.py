@@ -24,24 +24,24 @@ def get_factor_list():
     '''
     # The factor list stores the factor string I need.
     return [
-        "pe_ttm", 
-        "pb_lyr", 
-        "pcf_ncf_ttm", 
-        "ps_ttm", 
-        "yoyprofit",
-        "yoy_or", 
-        "yoyroe", 
-        "roe_ttm", 
-        "roa_ttm", 
-        "debttoassets", 
-        "assetsturn", 
-        "invturn",  
-        "pct_chg", 
-        # "underlyinghisvol_90d", 
-        # "tech_turnoverrate20", 
-        # "tech_turnoverrate60", 
-        # "tech_turnoverrate120", 
-        # "val_lnmv"
+        # "pe_ttm", 
+        # "pb_lyr", 
+        # "pcf_ncf_ttm", 
+        # "ps_ttm", 
+        # "yoyprofit",
+        # "yoy_or", 
+        # "yoyroe", 
+        # "roe_ttm", 
+        # "roa_ttm", 
+        # "debttoassets", 
+        # "assetsturn", 
+        # "invturn",  
+        # "pct_chg", 
+        "underlyinghisvol_90d", 
+        "tech_turnoverrate20", 
+        "tech_turnoverrate60", 
+        # "industry_sw", 
+        "val_lnmv"
         # The last 5 data haven't been downloaded yet for quota exceeded.
     ]
 
@@ -49,20 +49,31 @@ def get_factor_list():
 def get_hs300_stocks_list():
     '''
     Return:
-        hs300 stocks list. (list)
+        hs300 stocks list. (pd.DataFrame)
     '''
-    # Getting the stock list of HS300.
-    hs300_stocks_list = list(w.wset(
-        "sectorconstituent", 
-        "date=2019-02-20;windcode=000300.SH", # base on recent date.
-        usedf = True
-    )[1]['wind_code'])
-    hs300_data = pd.DataFrame(
-        data = hs300_stocks_list, 
-        columns = ["HS300"]
-    )
     file_path = path + "\\H3 Data\\Raw Data\\hs300.csv"
-    hs300_data.to_csv(file_path)
+    if os.path.isfile(file_path):
+        hs300_data = pd.read_csv(
+            open(
+                file_path, 
+                'r', 
+                encoding = "utf-8"
+            ), 
+            index_col = [0]
+        )
+    else:
+        # Getting the stock list of HS300.
+        hs300_stocks_list = list(w.wset(
+            "sectorconstituent", 
+            "date=2019-02-20;windcode=000300.SH", # base on recent date.
+            usedf = True
+        )[1]['wind_code'])
+        hs300_data = pd.DataFrame(
+            data = hs300_stocks_list, 
+            columns = ["HS300"]
+        )
+        hs300_data.to_csv(file_path)
+    return list(hs300_data["HS300"])
 
 #%%
 get_hs300_stocks_list()
