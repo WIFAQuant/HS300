@@ -17,46 +17,69 @@ from WindPy import *
 w.start()
 
 #%%
-# The factor list stores the factor string I need.
-factor_list = [
-    "pe_ttm", 
-    "pb_lyr", 
-    "pcf_ncf_ttm", 
-    "ps_ttm", 
-    "yoyprofit",
-    "yoy_or", 
-    "yoyroe", 
-    "roe_ttm", 
-    "roa_ttm", 
-    "debttoassets", 
-    "assetsturn", 
-    "invturn",  
-    "pct_chg", 
-    # "underlyinghisvol_90d", 
-    # "tech_turnoverrate20", 
-    # "tech_turnoverrate60", 
-    # "tech_turnoverrate120", 
-    # "val_lnmv"
-    # The last 5 data haven't been downloaded yet for quota exceeded.
-]
+def get_factor_list():
+    '''
+    Return:
+        factor list. (list)
+    '''
+    # The factor list stores the factor string I need.
+    return [
+        "pe_ttm", 
+        "pb_lyr", 
+        "pcf_ncf_ttm", 
+        "ps_ttm", 
+        "yoyprofit",
+        "yoy_or", 
+        "yoyroe", 
+        "roe_ttm", 
+        "roa_ttm", 
+        "debttoassets", 
+        "assetsturn", 
+        "invturn",  
+        "pct_chg", 
+        # "underlyinghisvol_90d", 
+        # "tech_turnoverrate20", 
+        # "tech_turnoverrate60", 
+        # "tech_turnoverrate120", 
+        # "val_lnmv"
+        # The last 5 data haven't been downloaded yet for quota exceeded.
+    ]
 
 #%%
-# Getting the stock list of HS300.
-hs300_stocks_list = list(w.wset(
-    "sectorconstituent", 
-    "date=2019-02-20;windcode=000300.SH", # base on recent date.
-    usedf = True
-)[1]['wind_code'])
+def get_hs300_stocks_list():
+    '''
+    Return:
+        hs300 stocks list. (list)
+    '''
+    # Getting the stock list of HS300.
+    hs300_stocks_list = list(w.wset(
+        "sectorconstituent", 
+        "date=2019-02-20;windcode=000300.SH", # base on recent date.
+        usedf = True
+    )[1]['wind_code'])
+    hs300_data = pd.DataFrame(
+        data = hs300_stocks_list, 
+        columns = ["HS300"]
+    )
+    file_path = path + "\\H3 Data\\Raw Data\\hs300.csv"
+    hs300_data.to_csv(file_path)
 
 #%%
 def data_fetching_and_storing(
     start = "2005-01-01", 
     end = "2019-02-20"
 ):
+    '''
+    Parameters:
+        start: start date (YYYY-MM-DD). (str)
+        end: end date (YYYY-MM-DD). (str)
+    Return:
+        save raw data to "\\H3 Data\\Raw Data\\" as csv.
+    '''
     # Import data from wind and store it as csv.
-    for factor in factor_list:
+    for factor in get_factor_list():
         factor_data = w.wsd(
-            hs300_stocks_list, 
+            get_hs300_stocks_list(), 
             factor, 
             start, 
             end, 
@@ -69,8 +92,12 @@ def data_fetching_and_storing(
 
 #%%
 def sw_industry_data_fetching_and_storing():
+    '''
+    Return:
+        save SHENWAN industry data to "\\H3 Data\\Raw Data\\" as csv.
+    '''
     industry_sw = w.wsd(
-        hs300_stocks_list, 
+        get_hs300_stocks_list(), 
         "industry_sw", 
         "2019-02-20", 
         "2019-02-20", # set the start and end date as the same.
@@ -79,6 +106,9 @@ def sw_industry_data_fetching_and_storing():
     )[1]
     file_path = path + "\\H3 Data\\Raw Data\\industry_sw.csv"
     industry_sw.to_csv(file_path)
+
+#%%
+get_hs300_stocks_list()
 
 #%%
 data_fetching_and_storing()
