@@ -349,7 +349,7 @@ def neutralize_and_store_data():
         neutralized_data.to_csv(file_path)
 
 #%%
-neutralize_and_store_data()
+# neutralize_and_store_data()
 
 #%%
 def get_neutralized_data(factor_name):
@@ -370,3 +370,20 @@ def get_neutralized_data(factor_name):
         index_col = [0]
     )
     return data
+
+#%%
+def overview_after_data_processing():
+    # Get an overview of data after processing.
+    plt.figure(figsize = (10, 10))
+    for i in range(9):
+        plt.subplot(int("33" + str(i+1)))
+        factor_name = get_factor_list()[i]
+        sns.distplot(get_values(
+            data = get_neutralized_data(factor_name)
+        ))
+        plt.title(factor_name)
+    plt.suptitle("经过数据处理后的不同因子在A股的历史数据分布")
+    plt.savefig(path + "\\H3 Plots\\overview after data processing.png")
+
+#%%
+overview_after_data_processing()

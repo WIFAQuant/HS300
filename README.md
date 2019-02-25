@@ -250,6 +250,14 @@ data.fillna(method = 'ffill', inplace = True)
 > - 代码详见“H3 Codes/Data Neutralization.py” 文件。
 > - 数据保存在"H3 Data/Neutralized Data"文件夹里。
 
+最终经过所有因子数据处理步骤之后，原来的因子数据分布图变为了这样。
+
+（经过所有数据处理步骤后的因子数据密度分布图一览👇）
+
+![overview after data processing.png](https://i.loli.net/2019/02/25/5c740407138d5.png)
+
+可以看出数据经过处理后分布变得更加接近标准正态分布了一些。
+
 # Step 3：大类因子合成
 
 前面两个步骤已经把风格因子的细分类因子数据经过数据处理并保存了下来，这一步把细分类因子合成为大类因子。使得最终合成后只剩下：
