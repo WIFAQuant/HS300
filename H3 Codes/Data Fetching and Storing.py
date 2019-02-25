@@ -65,6 +65,9 @@ def get_hs300_stocks_list():
     hs300_data.to_csv(file_path)
 
 #%%
+get_hs300_stocks_list()
+
+#%%
 def data_fetching_and_storing(
     start = "2005-01-01", 
     end = "2019-02-20"
@@ -91,6 +94,9 @@ def data_fetching_and_storing(
         factor_data.to_csv(file_path)                      # store data.
 
 #%%
+data_fetching_and_storing()
+
+#%%
 def sw_industry_data_fetching_and_storing():
     '''
     Return:
@@ -106,12 +112,6 @@ def sw_industry_data_fetching_and_storing():
     )[1]
     file_path = path + "\\H3 Data\\Raw Data\\industry_sw.csv"
     industry_sw.to_csv(file_path)
-
-#%%
-get_hs300_stocks_list()
-
-#%%
-data_fetching_and_storing()
 
 #%%
 sw_industry_data_fetching_and_storing()

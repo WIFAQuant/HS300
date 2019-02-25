@@ -94,6 +94,9 @@ def overview():
     plt.suptitle("不同因子在A股的历史数据分布")
     plt.savefig(path + "\\H3 Plots\\overview.png")
 
+#%%
+overview()
+
 #%% [markdown]
 # ## 2.1 Filter Extreme Value.
 
@@ -210,6 +213,11 @@ def overview_percentile():
     plt.savefig(path + "\\H3 Plots\\percentile.png")
 
 #%%
+overview_MAD()
+overview_three_sigma()
+overview_percentile()
+
+#%%
 def huge_deviation_original_data():
     '''
     Return:
@@ -225,6 +233,9 @@ def huge_deviation_original_data():
     plt.savefig(path + "\\H3 Plots\\original pcf_ncf_ttm.png")
 
 #%%
+huge_deviation_original_data()
+
+#%%
 def huge_deviation_filtered_data():
     '''
     Return:
@@ -238,6 +249,9 @@ def huge_deviation_filtered_data():
     plt.legend()
     plt.title("每股现金流：百分位去极值")
     plt.savefig(path + "\\H3 Plots\\percentile filter pcf_ncf_ttm.png")
+
+#%%
+huge_deviation_filtered_data()
 
 #%%
 def huge_deviation_filter_method_comparison():
@@ -264,6 +278,9 @@ def huge_deviation_filter_method_comparison():
     plt.savefig(path + "\\H3 Plots\\Comparison(pcf_ncf_ttm).png")
 
 #%%
+huge_deviation_filter_method_comparison()
+
+#%%
 def filter_method_comparison():
     '''
     Return:
@@ -286,6 +303,9 @@ def filter_method_comparison():
     plt.legend()
     plt.title("不同去极值方法的比较（以资产周转率为例）")
     plt.savefig(path + "\\H3 Plots\\Comparison(assetsturn).png")
+
+#%%
+filter_method_comparison()
 
 #%% [markdown]
 # ## 2.3 standardize
@@ -316,6 +336,9 @@ def process_and_store_data():
         processed_data = standardize(factor)
         file_path = path + "\\H3 Data\\Processed Data\\" + factor + ".csv"
         processed_data.to_csv(file_path)
+
+#%%
+process_and_store_data()
 
 #%%
 def get_processed_data(factor_name): # get data from disk.
@@ -350,29 +373,6 @@ def overview_processed_data():
         plt.title(get_factor_list()[i])
     plt.suptitle("经过处理后的A股因子数据密度分布图一览")
     plt.savefig(path + "\\H3 Plots\\Processed Data.png")
-
-#%%
-overview()
-
-#%%
-overview_MAD()
-overview_three_sigma()
-overview_percentile()
-
-#%%
-huge_deviation_original_data()
-
-#%%
-huge_deviation_filtered_data()
-
-#%%
-huge_deviation_filter_method_comparison()
-
-#%%
-filter_method_comparison()
-
-#%%
-process_and_store_data()
 
 #%%
 overview_processed_data()

@@ -10,27 +10,32 @@ plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
 plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
 
 #%%
-# The factor list stores the factor string I need.
-factor_list = [
-    "pe_ttm", 
-    "pb_lyr", 
-    "pcf_ncf_ttm", 
-    "ps_ttm", 
-    "yoyprofit",
-    "yoy_or", 
-    "yoyroe", 
-    # "roe_ttm",  # weired
-    # "roa_ttm",  # weired
-    "debttoassets", 
-    "assetsturn", 
-    "invturn",  
-    "pct_chg", 
-    # "underlyinghisvol_90d", 
-    # "tech_turnoverrate20", 
-    # "tech_turnoverrate60", 
-    # "val_lnmv"
-    # The last 4 data haven't been downloaded yet for quota exceeded.
-]
+def get_factor_list():
+    '''
+    Return:
+        factor list. (list)
+    '''
+    # The factor list stores the factor string I need.
+    return [
+        "pe_ttm", 
+        "pb_lyr", 
+        "pcf_ncf_ttm", 
+        "ps_ttm", 
+        "yoyprofit",
+        "yoy_or", 
+        "yoyroe", 
+        # "roe_ttm",  # weired
+        # "roa_ttm",  # weired
+        "debttoassets", 
+        "assetsturn", 
+        "invturn",  
+        "pct_chg", 
+        # "underlyinghisvol_90d", 
+        # "tech_turnoverrate20", 
+        # "tech_turnoverrate60", 
+        # "val_lnmv"
+        # The last 4 data haven't been downloaded yet for quota exceeded.
+    ]
 
 #%%
 def get_data(factor_name): # get data from disk.
@@ -77,9 +82,25 @@ def get_processed_data(factor_name): # get data from disk.
     return data
 
 #%%
-def industry_comparison(factor_name = "pb_lyr"):
+def get_industry_data():
+    '''
+    Return:
+        SHENWAN industry data. (pd.DataFrame)      
+    '''
+    return get_processed_data("industry_sw")
+
+#%%
+def industry_comparison(factor_name):
+    '''
+    Parameter:
+        factor_name: name of factors in Wind. (str)
+    Return:
+        average factor value of each industries. (pd.DataFrame)
+            index: industry. (str)
+            columns: factor name. (str)
+    '''
     # All industry in HS300.
-    sw_industry_data = get_processed_data("industry_sw")
+    sw_industry_data = get_industry_data()
     sw_industry_list = list(sw_industry_data.iloc[:, 0].unique())
     # Use certain factor data for comparison example between industry.
     compare_data = get_data(factor_name)
@@ -104,13 +125,19 @@ def industry_comparison(factor_name = "pb_lyr"):
 
 #%%
 def plot_industry_comparison():
+    '''
+    Return:
+        save a 2*2 plot of average factor of each industries, 
+        which are all siginificantly different. 
+    '''
+    # Choose 4 factors that's significantly different among industries. 
     significant_comparison_industry_list = [
         "pcf_ncf_ttm", 
         "yoyprofit", 
         "yoyroe", 
         "invturn"
     ]
-    plt.figure(figsize = (21, 18))
+    plt.figure(figsize = (21, 18)) # it's a big plot.
     for i in range(len(significant_comparison_industry_list)):
         plot_data = industry_comparison(
             significant_comparison_industry_list[i]
@@ -121,7 +148,7 @@ def plot_industry_comparison():
             y = significant_comparison_industry_list[i], 
             data = plot_data
         )
-        plt.xticks(rotation = 60)
+        plt.xticks(rotation = 60) # rotate to avoid overlap text.
         plt.title(
             significant_comparison_industry_list[i], 
             fontsize = 21
@@ -143,6 +170,6 @@ print(round(
 ))
 
 #%%
-industry_comparison("pcf_ncf_ttm").loc["有色金属", "pcf_ncf_ttm"]
+get_industry_data()
 
 #%%
