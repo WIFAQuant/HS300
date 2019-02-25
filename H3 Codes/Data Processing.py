@@ -10,28 +10,29 @@ plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
 plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
 
 #%%
-# The factor list stores the factor string I need.
-factor_list = [
-    "pe_ttm", 
-    "pb_lyr", 
-    "pcf_ncf_ttm", 
-    "ps_ttm", 
-    "yoyprofit",
-    "yoy_or", 
-    "yoyroe", 
-    # "roe_ttm",  # weired
-    # "roa_ttm",  # weired
-    "debttoassets", 
-    "assetsturn", 
-    "invturn",  
-    "pct_chg", 
-    # "underlyinghisvol_90d", 
-    # "tech_turnoverrate20", 
-    # "tech_turnoverrate60", 
-    # "tech_turnoverrate120", 
-    # "val_lnmv"
-    # The last 5 data haven't been downloaded yet for quota exceeded.
-]
+def get_factor_list():
+    # The factor list stores the factor string I need.
+    return [
+        "pe_ttm", 
+        "pb_lyr", 
+        "pcf_ncf_ttm", 
+        "ps_ttm", 
+        "yoyprofit",
+        "yoy_or", 
+        "yoyroe", 
+        # "roe_ttm",  # weired
+        # "roa_ttm",  # weired
+        "debttoassets", 
+        "assetsturn", 
+        "invturn",  
+        "pct_chg", 
+        # "underlyinghisvol_90d", 
+        # "tech_turnoverrate20", 
+        # "tech_turnoverrate60", 
+        # "tech_turnoverrate120", 
+        # "val_lnmv"
+        # The last 5 data haven't been downloaded yet for quota exceeded.
+    ]
 
 #%% [markdown]
 # # Step 2：Factor Data Processing.
@@ -87,9 +88,9 @@ def overview():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data = get_data(factor_list[i])
+            data = get_data(get_factor_list()[i])
         ))
-        plt.title(factor_list[i])
+        plt.title(get_factor_list()[i])
     plt.suptitle("不同因子在A股的历史数据分布")
     plt.savefig(path + "\\H3 Plots\\overview.png")
 
@@ -166,9 +167,9 @@ def overview_MAD():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data = Filter(factor_list[i]).MAD()
+            data = Filter(get_factor_list()[i]).MAD()
         ))
-        plt.title(factor_list[i])
+        plt.title(get_factor_list()[i])
     plt.suptitle("绝对值差中位数法(MAD法)去极值后")
     plt.savefig(path + "\\H3 Plots\\MAD.png")
 
@@ -184,9 +185,9 @@ def overview_three_sigma():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data = Filter(factor_list[i]).three_sigma()
+            data = Filter(get_factor_list()[i]).three_sigma()
         ))
-        plt.title(factor_list[i])
+        plt.title(get_factor_list()[i])
     plt.suptitle("3σ法去极值后")
     plt.savefig(path + "\\H3 Plots\\3σ.png")
 
@@ -202,9 +203,9 @@ def overview_percentile():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data = Filter(factor_list[i]).percentile_filter()
+            data = Filter(get_factor_list()[i]).percentile_filter()
         ))
-        plt.title(factor_list[i])
+        plt.title(get_factor_list()[i])
     plt.suptitle("百分位法去极值后")
     plt.savefig(path + "\\H3 Plots\\percentile.png")
 
@@ -311,7 +312,7 @@ def process_and_store_data():
         save processed data in "\\H3 Data\\Processed Data\\".
         ("processed" means filtered & standardized.)
     '''
-    for factor in factor_list:
+    for factor in get_factor_list():
         processed_data = standardize(factor)
         file_path = path + "\\H3 Data\\Processed Data\\" + factor + ".csv"
         processed_data.to_csv(file_path)
@@ -344,8 +345,34 @@ def overview_processed_data():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data = get_processed_data(factor_list[i])
+            data = get_processed_data(get_factor_list()[i])
         ))
-        plt.title(factor_list[i])
+        plt.title(get_factor_list()[i])
     plt.suptitle("经过处理后的A股因子数据密度分布图一览")
     plt.savefig(path + "\\H3 Plots\\Processed Data.png")
+
+#%%
+overview()
+
+#%%
+overview_MAD()
+overview_three_sigma()
+overview_percentile()
+
+#%%
+huge_deviation_original_data()
+
+#%%
+huge_deviation_filtered_data()
+
+#%%
+huge_deviation_filter_method_comparison()
+
+#%%
+filter_method_comparison()
+
+#%%
+process_and_store_data()
+
+#%%
+overview_processed_data()
