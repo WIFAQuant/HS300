@@ -308,7 +308,7 @@ def standardize(factor_name):
 def process_and_store_data():
     '''
     Return:
-        save processed data in "\H3 Data\Processed Data\".
+        save processed data in "\\H3 Data\\Processed Data\\".
         ("processed" means filtered & standardized.)
     '''
     for factor in factor_list:
