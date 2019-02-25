@@ -77,16 +77,21 @@ def get_values(data):
     return value_list
 
 #%%
-# Get an overview of 9 of the factors histogram distribution plot.
-plt.figure(figsize = (10, 10))
-for i in range(9):
-    plt.subplot(int("33" + str(i+1)))
-    sns.distplot(get_values(
-        data = get_data(factor_list[i])
-    ))
-    plt.title(factor_list[i])
-plt.suptitle("不同因子在A股的历史数据分布")
-plt.savefig(path + "\\H3 Plots\\overview.png")
+def overview():
+    '''
+    Return:
+        save a 3*3 histogram distribution plot of original data.
+    '''
+    # Get an overview of 9 of the factors histogram distribution plot.
+    plt.figure(figsize = (10, 10))
+    for i in range(9):
+        plt.subplot(int("33" + str(i+1)))
+        sns.distplot(get_values(
+            data = get_data(factor_list[i])
+        ))
+        plt.title(factor_list[i])
+    plt.suptitle("不同因子在A股的历史数据分布")
+    plt.savefig(path + "\\H3 Plots\\overview.png")
 
 #%% [markdown]
 # ## 2.1 Filter Extreme Value.
@@ -150,94 +155,136 @@ class Filter(object):
         return np.clip(self.data, min_range, max_range)
 
 #%%
-# Get an overview of MAD method filtering.
-plt.figure(figsize = (10, 10))
-for i in range(9):
-    plt.subplot(int("33" + str(i+1)))
+def overview_MAD():
+    '''
+    Return:
+        save a 3*3 histogram distribution plot of 
+        MAD-filtered data.
+    '''
+    # Get an overview of MAD method filtering.
+    plt.figure(figsize = (10, 10))
+    for i in range(9):
+        plt.subplot(int("33" + str(i+1)))
+        sns.distplot(get_values(
+            data = Filter(factor_list[i]).MAD()
+        ))
+        plt.title(factor_list[i])
+    plt.suptitle("绝对值差中位数法(MAD法)去极值后")
+    plt.savefig(path + "\\H3 Plots\\MAD.png")
+
+#%%
+def overview_three_sigma():
+    '''
+    Return:
+        save a 3*3 histogram distribution plot of 
+        3sigma-filtered data.
+    '''
+    # Get an overview of 3 sigma method filtering.
+    plt.figure(figsize = (10, 10))
+    for i in range(9):
+        plt.subplot(int("33" + str(i+1)))
+        sns.distplot(get_values(
+            data = Filter(factor_list[i]).three_sigma()
+        ))
+        plt.title(factor_list[i])
+    plt.suptitle("3σ法去极值后")
+    plt.savefig(path + "\\H3 Plots\\3σ.png")
+
+#%%
+def overview_percentile():
+    '''
+    Return:
+        save a 3*3 histogram distribution plot of 
+        percentile-filtered data.
+    '''
+    # Get an overview of percentile method filtering.
+    plt.figure(figsize = (10, 10))
+    for i in range(9):
+        plt.subplot(int("33" + str(i+1)))
+        sns.distplot(get_values(
+            data = Filter(factor_list[i]).percentile_filter()
+        ))
+        plt.title(factor_list[i])
+    plt.suptitle("百分位法去极值后")
+    plt.savefig(path + "\\H3 Plots\\percentile.png")
+
+#%%
+def huge_deviation_original_data():
+    '''
+    Return:
+        save a histogram distribution plot of 
+        original data with huge deviation.
+    '''
+    plt.figure(figsize = (8, 5))
     sns.distplot(get_values(
-        data = Filter(factor_list[i]).MAD()
-    ))
-    plt.title(factor_list[i])
-plt.suptitle("绝对值差中位数法(MAD法)去极值后")
-plt.savefig(path + "\\H3 Plots\\MAD.png")
+        data = Filter("pcf_ncf_ttm").original()
+    ), label = "Percentile")
+    plt.legend()
+    plt.title("每股现金流：原始数据")
+    plt.savefig(path + "\\H3 Plots\\original pcf_ncf_ttm.png")
 
 #%%
-# Get an overview of 3 sigma method filtering.
-plt.figure(figsize = (10, 10))
-for i in range(9):
-    plt.subplot(int("33" + str(i+1)))
+def huge_deviation_filtered_data():
+    '''
+    Return:
+        save a histogram distribution plot of 
+        percentile-filtered data with huge deviation.
+    '''
+    plt.figure(figsize = (8, 5))
     sns.distplot(get_values(
-        data = Filter(factor_list[i]).three_sigma()
-    ))
-    plt.title(factor_list[i])
-plt.suptitle("3σ法去极值后")
-plt.savefig(path + "\\H3 Plots\\3σ.png")
+        data = Filter("pcf_ncf_ttm").percentile_filter()
+    ), label = "Percentile")
+    plt.legend()
+    plt.title("每股现金流：百分位去极值")
+    plt.savefig(path + "\\H3 Plots\\percentile filter pcf_ncf_ttm.png")
 
 #%%
-# Get an overview of percentile method filtering.
-plt.figure(figsize = (10, 10))
-for i in range(9):
-    plt.subplot(int("33" + str(i+1)))
+def huge_deviation_filter_method_comparison():
+    '''
+    Return:
+        save a histogram distribution plot of 
+        a hugely deviated data for different filter method comparison.
+    '''
+    plt.figure(figsize = (8, 5))
     sns.distplot(get_values(
-        data = Filter(factor_list[i]).percentile_filter()
-    ))
-    plt.title(factor_list[i])
-plt.suptitle("百分位法去极值后")
-plt.savefig(path + "\\H3 Plots\\percentile.png")
+        data = Filter("pcf_ncf_ttm").original()
+    ), label = "Original")
+    sns.distplot(get_values(
+        data = Filter("pcf_ncf_ttm").MAD()
+    ), label = "MAD")
+    sns.distplot(get_values(
+        data = Filter("pcf_ncf_ttm").three_sigma()
+    ), label = "3σ")
+    sns.distplot(get_values(
+        data = Filter("pcf_ncf_ttm").percentile_filter()
+    ), label = "Percentile")
+    plt.legend()
+    plt.title("不同去极值方法的比较（以每股现金流为例）")
+    plt.savefig(path + "\\H3 Plots\\Comparison(pcf_ncf_ttm).png")
 
 #%%
-plt.figure(figsize = (8, 5))
-sns.distplot(get_values(
-    data = Filter("pcf_ncf_ttm").original()
-), label = "Percentile")
-plt.legend()
-plt.title("每股现金流：原始数据")
-plt.savefig(path + "\\H3 Plots\\original pcf_ncf_ttm.png")
-
-#%%
-plt.figure(figsize = (8, 5))
-sns.distplot(get_values(
-    data = Filter("pcf_ncf_ttm").percentile_filter()
-), label = "Percentile")
-plt.legend()
-plt.title("每股现金流：百分位去极值")
-plt.savefig(path + "\\H3 Plots\\percentile filter pcf_ncf_ttm.png")
-
-#%%
-plt.figure(figsize = (8, 5))
-sns.distplot(get_values(
-    data = Filter("pcf_ncf_ttm").original()
-), label = "Original")
-sns.distplot(get_values(
-    data = Filter("pcf_ncf_ttm").MAD()
-), label = "MAD")
-sns.distplot(get_values(
-    data = Filter("pcf_ncf_ttm").three_sigma()
-), label = "3σ")
-sns.distplot(get_values(
-    data = Filter("pcf_ncf_ttm").percentile_filter()
-), label = "Percentile")
-plt.legend()
-plt.title("不同去极值方法的比较（以每股现金流为例）")
-plt.savefig(path + "\\H3 Plots\\Comparison(pcf_ncf_ttm).png")
-
-#%%
-plt.figure(figsize = (8, 5))
-sns.distplot(get_values(
-    data = Filter("assetsturn").original()
-), label = "Original")
-sns.distplot(get_values(
-    data = Filter("assetsturn").MAD()
-), label = "MAD")
-sns.distplot(get_values(
-    data = Filter("assetsturn").three_sigma()
-), label = "3σ")
-sns.distplot(get_values(
-    data = Filter("assetsturn").percentile_filter()
-), label = "Percentile")
-plt.legend()
-plt.title("不同去极值方法的比较（以资产周转率为例）")
-plt.savefig(path + "\\H3 Plots\\Comparison(assetsturn).png")
+def filter_method_comparison():
+    '''
+    Return:
+        save a histogram distribution plot of
+        a normal data for different filter method comparison.
+    '''
+    plt.figure(figsize = (8, 5))
+    sns.distplot(get_values(
+        data = Filter("assetsturn").original()
+    ), label = "Original")
+    sns.distplot(get_values(
+        data = Filter("assetsturn").MAD()
+    ), label = "MAD")
+    sns.distplot(get_values(
+        data = Filter("assetsturn").three_sigma()
+    ), label = "3σ")
+    sns.distplot(get_values(
+        data = Filter("assetsturn").percentile_filter()
+    ), label = "Percentile")
+    plt.legend()
+    plt.title("不同去极值方法的比较（以资产周转率为例）")
+    plt.savefig(path + "\\H3 Plots\\Comparison(assetsturn).png")
 
 #%% [markdown]
 # ## 2.3 standardize
@@ -258,10 +305,16 @@ def standardize(factor_name):
     return (data - mean) / std
 
 #%%
-for factor in factor_list:
-    processed_data = standardize(factor)
-    file_path = path + "\\H3 Data\\Processed Data\\" + factor + ".csv"
-    processed_data.to_csv(file_path)
+def process_and_store_data():
+    '''
+    Return:
+        save processed data in "\H3 Data\Processed Data\".
+        ("processed" means filtered & standardized.)
+    '''
+    for factor in factor_list:
+        processed_data = standardize(factor)
+        file_path = path + "\\H3 Data\\Processed Data\\" + factor + ".csv"
+        processed_data.to_csv(file_path)
 
 #%%
 def get_processed_data(factor_name): # get data from disk.
@@ -285,13 +338,14 @@ def get_processed_data(factor_name): # get data from disk.
     return data
 
 #%%
-# Get an overview of processed data.
-plt.figure(figsize = (10, 10))
-for i in range(9):
-    plt.subplot(int("33" + str(i+1)))
-    sns.distplot(get_values(
-        data = get_processed_data(factor_list[i])
-    ))
-    plt.title(factor_list[i])
-plt.suptitle("经过处理后的A股因子数据密度分布图一览")
-plt.savefig(path + "\\H3 Plots\\Processed Data.png")
+def overview_processed_data():
+    # Get an overview of processed data.
+    plt.figure(figsize = (10, 10))
+    for i in range(9):
+        plt.subplot(int("33" + str(i+1)))
+        sns.distplot(get_values(
+            data = get_processed_data(factor_list[i])
+        ))
+        plt.title(factor_list[i])
+    plt.suptitle("经过处理后的A股因子数据密度分布图一览")
+    plt.savefig(path + "\\H3 Plots\\Processed Data.png")
