@@ -1,14 +1,18 @@
 #%% [markdown]
-# # HS300指数纯因子组合构建
+# # 沪深300指数纯因子组合构建
 # 
 # > WIFA量化组，2019年春。
-# 
-# ## Step 2: Factor Database building.
 
 #%%
-import os           # for getting working directory.
-path = os.getcwd()  # current working directory.
-import pandas as pd # for wrapping csv file.
+import os                                    # for getting working directory.
+path = os.getcwd()                           # current working directory.
+import pandas as pd                          # for wrapping csv file.
+import numpy as np                           # for numerical manipulation.
+import seaborn as sns                        # for plotting.
+sns.set(style = "darkgrid")                  # set seaborn style.
+import matplotlib.pyplot as plt              # specify "plt".
+plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
+plt.rcParams['axes.unicode_minus'] = False     # For displaying minus sign.
 
 #%%
 # Import Wind Module for getting data.
@@ -83,7 +87,7 @@ def get_hs300_stocks_list():
     return list(hs300_data["HS300"])
 
 #%%
-# get_hs300_stocks_list()
+get_hs300_stocks_list()
 
 #%%
 def data_fetching_and_storing(
@@ -109,10 +113,10 @@ def data_fetching_and_storing(
         )[1]             # the result is a tuple with the [1] part is what we need.
         # Make a new directory (H3 Data) for storing data.
         file_path = path + "\\H3 Data\\Raw Data\\" + factor + ".csv" # name the data file by it's factor string.
-        factor_data.to_csv(file_path)                      # store data.
+        factor_data.to_csv(file_path) # store data.
 
 #%%
-# data_fetching_and_storing()
+data_fetching_and_storing()
 
 #%%
 def sw_industry_data_fetching_and_storing():
@@ -136,13 +140,6 @@ def sw_industry_data_fetching_and_storing():
 
 #%%
 ##########################################################################################################################33
-path = "G:\\3、python源文件\多因子\HS300-master"                      # current working directory.
-import seaborn as sns                        # for plotting.
-sns.set(style = "darkgrid")                  # set seaborn style.
-import matplotlib.pyplot as plt              # specify "plt".
-plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
-plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
-
 
 #%% [markdown]
 # # Step 2：Factor Data Processing.
@@ -231,7 +228,7 @@ def overview():
     plt.savefig(path + "\\H3 Plots\\overview.png")
 
 #%%
-# overview()
+overview()
 
 #%% [markdown]
 # ## 2.1 Filter Extreme Value.
@@ -349,9 +346,9 @@ def overview_percentile():
     plt.savefig(path + "\\H3 Plots\\percentile.png")
 
 #%%
-# overview_MAD()
-# overview_three_sigma()
-# overview_percentile()
+overview_MAD()
+overview_three_sigma()
+overview_percentile()
 
 #%%
 def huge_deviation_original_data():
@@ -369,7 +366,7 @@ def huge_deviation_original_data():
     plt.savefig(path + "\\H3 Plots\\original pcf_ncf_ttm.png")
 
 #%%
-# huge_deviation_original_data()
+huge_deviation_original_data()
 
 #%%
 def huge_deviation_filtered_data():
@@ -387,7 +384,7 @@ def huge_deviation_filtered_data():
     plt.savefig(path + "\\H3 Plots\\percentile filter pcf_ncf_ttm.png")
 
 #%%
-# huge_deviation_filtered_data()
+huge_deviation_filtered_data()
 
 #%%
 def huge_deviation_filter_method_comparison():
@@ -414,7 +411,7 @@ def huge_deviation_filter_method_comparison():
     plt.savefig(path + "\\H3 Plots\\Comparison(pcf_ncf_ttm).png")
 
 #%%
-# huge_deviation_filter_method_comparison()
+huge_deviation_filter_method_comparison()
 
 #%%
 def filter_method_comparison():
@@ -441,7 +438,7 @@ def filter_method_comparison():
     plt.savefig(path + "\\H3 Plots\\Comparison(assetsturn).png")
 
 #%%
-# filter_method_comparison()
+filter_method_comparison()
 
 #%% [markdown]
 # ## 2.3 standardize
@@ -613,17 +610,14 @@ def plot_industry_comparison():
     plt.savefig(path + "\\H3 Plots\\Industry Comparison.png")
 
 #%%
-# plot_industry_comparison()
+plot_industry_comparison()
 
 #%%
-# print(round(
-#     industry_comparison("pcf_ncf_ttm").loc["有色金属", "pcf_ncf_ttm"] /  
-#     industry_comparison("pcf_ncf_ttm").loc["家用电器", "pcf_ncf_ttm"] , 
-#     0
-# ))
-
-#%%
-# get_industry_data()
+print(round(
+    industry_comparison("pcf_ncf_ttm").loc["有色金属", "pcf_ncf_ttm"] /  
+    industry_comparison("pcf_ncf_ttm").loc["家用电器", "pcf_ncf_ttm"] , 
+    0
+))
 
 #%%
 def get_industry_exposure(factor_name):

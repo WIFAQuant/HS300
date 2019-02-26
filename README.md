@@ -63,7 +63,6 @@ Ln_MarketValue|VAL_LNMV|对数市值
 > - 获取与存储数据的代码详见“Data_Fetching_and_Storing.py” 文件。
 > 
 > - 获取的原始数据储存在"H3 Data/Raw Data"文件夹里。
->
 
 数据格式如下：
 
