@@ -8,6 +8,9 @@ sns.set(style = "darkgrid")                  # set seaborn style.
 import matplotlib.pyplot as plt              # specify "plt".
 plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
 plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
+from  import get_factor_list
+
+#%%
 
 #%%
 def get_factor_list():
