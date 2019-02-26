@@ -30,7 +30,7 @@
 最初选取因子|最终确定因子|因子解释
 :--:|:--:|:--:
 EPS_TTM/P|PE_TTM|市盈率
-BPS_LR/P|PB_LYR|市净率
+BPS_LR/P|PB_LF|指定日最新公告股东权益
 CFPS_TTM/P|PCF_NCF_TTM|市现率（现金净流量）
 SP_TTM/P|PS_TTM|市销率
 NetProfit_SQ_YOY|YOYPROFIT|净利润同比增长率
@@ -44,8 +44,8 @@ InvTurnover|INVTURN|存货周转率
 Ret1M|PCT_CHG|涨跌幅
 Ret3M|PCT_CHG|涨跌幅
 Ret6M|PCT_CHG|涨跌幅
-RealizedVol_3M|UNDERLYINGHISVOL_90D|90日历史波动率
-RealizedVol_6M|UNDERLYINGHISVOL_90D|90日历史波动率
+RealizedVol_3M|STDEVRY|3月年化波动率
+RealizedVol_6M|STDEVRY|6月年化波动率
 Turnover_ave_1M|TECH_TURNOVERRATE20|20日平均换手率
 Turnover_ave_3M|TECH_TURNOVERRATE60|60日平均换手率
 中信一级行业列表|INDUSTRY_SW|申万行业名称
