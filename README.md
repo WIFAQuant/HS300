@@ -64,7 +64,9 @@ Ln_MarketValue|VAL_LNMV|对数市值
 > 
 > - 获取的原始数据储存在"H3 Data/Raw Data"文件夹里。
 >
+
 数据格式如下：
+
 行/列 | 股票代号（000001.SZ）
 :--|--:
 交易日期（YYYYMMDD） | 相应因子暴露
