@@ -24,28 +24,35 @@ def get_factor_list():
     '''
     # The factor list stores the factor string I need.
     return [
-        "pe_ttm", 
-        "pb_lyr", 
-        "pcf_ncf_ttm", 
-        "ps_ttm", 
-        "yoyprofit",
-        "yoy_or", 
-        "yoyroe", 
-        # "roe_ttm2", 
-        # "roa_ttm2", 
-        "debttoassets", 
-        "assetsturn", 
-        "invturn",  
-        "pct_chg", 
-        # "underlyinghisvol_90d", 
-        # "tech_turnoverrate20", 
-        # "tech_turnoverrate60", 
-        # "industry_sw", 
-        # "val_lnmv"
-        # The last 5 data haven't been downloaded yet for quota exceeded.
-    ]
-
+    "pe_ttm",
+    "pb_lf",
+    "pcf_ncf_ttm",
+    "ps_ttm",
+    "yoyprofit",
+    "yoy_or",
+    "yoyroe",
+    "roe_ttm2",
+    "roa_ttm2",
+    "debttoassets",
+    "assetsturn",
+    "invturn",
+    "pct_chg_1m",
+    "pct_chg_3m",
+    "pct_chg_6m",
+    "stdevry_3m",
+    "stdevry_6m",
+    "tech_turnoverrate20",
+    "tech_turnoverrate60",
+    "val_lnmv"
+]
+# 其中"pct_chg_1m",
+#     "pct_chg_3m",
+#     "pct_chg_6m",
+#     "stdevry_3m",
+#     "stdevry_6m",不好从wsd中取,"pct_chg_1m", "pct_chg_3m","pct_chg_6m"是根据pct_chg计算的，波动率提取要填开始区间和截止区间（区间为近几个月）
 #%%
+
+Large_Factors_list = ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE']
 def get_hs300_stocks_list():
     '''
     Return:
@@ -128,16 +135,14 @@ def sw_industry_data_fetching_and_storing():
 # sw_industry_data_fetching_and_storing()
 
 #%%
-import os                                    # for getting working directory.
-path = os.getcwd()                           # current working directory.
-import pandas as pd                          # for wrapping csv file.
-import numpy as np                           # for numerical manipulation.
+##########################################################################################################################33
+path = "G:\\3、python源文件\多因子\HS300-master"                      # current working directory.
 import seaborn as sns                        # for plotting.
 sns.set(style = "darkgrid")                  # set seaborn style.
 import matplotlib.pyplot as plt              # specify "plt".
 plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
 plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
-from Data_Fetching_and_Storing import get_factor_list
+
 
 #%% [markdown]
 # # Step 2：Factor Data Processing.
@@ -154,19 +159,43 @@ def get_data(factor_name): # get data from disk.
             index: months. (np.int64)
             columns: stocks code list. (str)
     '''
-    data = pd.read_csv(
-        open(
-            # Extract raw data.
-            path + "\\H3 Data\\Raw Data\\" + factor_name + ".csv", 
+    # 让这个函数可以直接取这几个动量因子
+    if factor_name in ["pct_chg_1m","pct_chg_3m","pct_chg_6m"]:
+        data_raw = data = pd.read_csv(open(
+            path + "\\H3 Data\\Raw Data\\" + 'pct_chg' + ".csv",
             'r', # read-only mode for data protection.
-            encoding = "utf-8"
-        ), 
-        index_col = [0]
-    )
+            encoding = "utf-8" ), index_col = [0])
+        if factor_name == 'pct_chg_1m':
+            data = data_raw
+        elif factor_name == 'pct_chg_3m':
+            data_raw.fillna(0, inplace=True)
+            data = pd.DataFrame(index=data_raw.index,columns=data_raw.columns)
+            for i in range(3,len(data_raw)):
+                data.iloc[i,:] = (data_raw.iloc[i-1,:]/100+1)*(data_raw.iloc[i-2,:]/100+1)*(data_raw.iloc[i-3,:]/100+1)-1
+        elif factor_name == 'pct_chg_6m':
+            data_raw.fillna(0, inplace=True)
+            data = pd.DataFrame(index=data_raw.index, columns=data_raw.columns)
+            for i in range(6, len(data_raw)):
+                data.iloc[i, :] = (data_raw.iloc[i - 1, :]/100 + 1) * (data_raw.iloc[i - 2, :]/100 + 1) * (
+                    data_raw.iloc[i - 3, :]/100 + 1)* (
+                    data_raw.iloc[i - 4, :]/100 + 1)* (
+                    data_raw.iloc[i - 5, :]/100 + 1)* (
+                    data_raw.iloc[i - 6, :]/100 + 1) - 1
+        data = data.replace(0,np.nan)
+    else:
+        data = pd.read_csv(
+            open(
+                # Extract raw data.
+                path + "\\H3 Data\\Raw Data\\" + factor_name + ".csv",'r', # read-only mode for data protection.
+                encoding = "utf-8"
+            ),
+            index_col = [0]
+        )
     # Forward-fill nan to make quarter report fill the month.
-    data.fillna(method = 'ffill', inplace = True) 
+    data.fillna(method = 'ffill', inplace = True)
     # Make all date format in the same way.
     data.index = pd.to_datetime(data.index).strftime('%Y%m%d')
+    data = data.loc['20090131':'20190131']
     return data
 
 #%%
@@ -192,7 +221,7 @@ def overview():
     '''
     # Get an overview of 9 of the factors histogram distribution plot.
     plt.figure(figsize = (10, 10))
-    for i in range(len(get_factor_list())):
+    for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
             data = get_data(get_factor_list()[i])
@@ -496,8 +525,7 @@ plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
 import math
 from statsmodels import regression
 import statsmodels.api as sm
-from Data_Fetching_and_Storing import get_factor_list
-from Data_Processing import get_data, get_values, get_processed_data
+
 
 #%%
 def get_industry_data():
@@ -723,7 +751,7 @@ def overview_neutralization(factor_list):
 
 #%%
 overview_neutralization([
-    "pb_lyr", 
+    "pb_lf",
     "debttoassets", 
     "assetsturn", 
     "invturn"
@@ -785,20 +813,7 @@ def overview_after_data_processing():
 #%%
 overview_after_data_processing()
 
-#%%
-import os                                    # for getting working directory.
-path = os.getcwd()                           # current working directory.
-import pandas as pd                          # for wrapping csv file.
-import numpy as np                           # for numerical manipulation.
-import seaborn as sns                        # for plotting.
-sns.set(style = "darkgrid")                  # set seaborn style.
-import matplotlib.pyplot as plt              # specify "plt".
-plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
-plt.rcParams['axes.unicode_minus'] = False   # For displaying minus sign.
-from Data_Fetching_and_Storing import get_factor_list
-from Data_Processing import get_processed_data, get_values
-from Data_Neutralization import get_neutralized_data
-
+########################################################################################################################
 #%% [markdown]
 # # STEP 3
 
@@ -826,23 +841,24 @@ class Large_factor_merge(object):
     '''
     def __init__(self, Large_factor):
         if Large_factor == 'VALUE':
-            list = ["pe_ttm","pb_lyr","pcf_ncf_ttm","ps_ttm"]
+            list = ["pe_ttm","pb_lf","pcf_ncf_ttm","ps_ttm"]
         elif Large_factor =='GROWTH':
             list = ["yoyprofit","yoy_or","yoyroe"]
         elif Large_factor =='PROFIT':
-            list = ["roe_ttm","roa_ttm"]
+            list = ["roe_ttm2","roa_ttm2"]
         elif Large_factor == 'QUALITY':
             list = ["debttoassets","assetsturn","invturn"]
         elif Large_factor =='MOMENTUM':
-            list = ['pct_chg'] # This will be modified
+            list = ['pct_chg_1m','pct_chg_3m','pct_chg_6m']
         elif Large_factor =='VOLATILITY':
-            list = ["underlyinghisvol_90d","tech_turnoverrate20"]
+            list = ["stdevry_3m","stdevry_6m"]
         elif Large_factor == 'LIQUIDITY':
-            list = ["tech_turnoverrate60","tech_turnoverrate120"]
+            list = ["tech_turnoverrate60","tech_turnoverrate20"]
         data = get_group_data(list)
         self.data = data
         self.Large_factor = Large_factor
     # Define the following function for you can read clearly and can acquire the data of every step.
+
     def Caculate_IC(self):
         '''
         Return:
@@ -893,26 +909,68 @@ class Large_factor_merge(object):
         return Factors_sum
 
 #%%
-Factor_dict = {}
-for i in ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY']:
-    Factor_data = Large_factor_merge(i).Factors_merge()
-    Factor_dict[i] = Factor_data
-Large_factor = pd.Panel(Factor_dict)
+def Merge_and_store_factors():
+    Factor_dict = {}
+    for i in ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY']:
+        Factor_data = Large_factor_merge(i).Factors_merge()
+        Factor_dict[i] = Factor_data
+        file_path = path + "\\H3 Data\\large factor data\\" + i + ".csv"
+        Factor_data.to_csv(file_path)
+    Large_factor = pd.Panel(Factor_dict)
+    return Large_factor
+Large_factor = Merge_and_store_factors()
 # when you want to use one factor,you can edit'Large_factor[the name of the factor]'
 
+
+#%%
+def get_Large_Factors(factor_name):
+    '''
+    Parameter:
+        factor_name: name of factors in Wind. (str)
+    Return:
+        neutralized factor data. (pd.DataFrame)
+            index: months. (np.int64)
+            columns: stocks code list. (str)
+    '''
+    data = pd.read_csv(
+        open(
+            path + "\\H3 Data\\large factor data\\" + factor_name + ".csv",
+            'r', # read-only mode for data protection.
+            encoding = "utf-8"
+        ),
+        index_col = [0]
+    )
+    return data
+
+#%%
+def overview_Large_factors():
+    # Get an overview of data after processing.
+    plt.figure(figsize = (10, 10))
+    for i in range(7):
+        plt.subplot(int("33" + str(i+1)))
+        factor_name = Large_Factors_list[i]
+        sns.distplot(get_values(
+            data = get_Large_Factors(factor_name)
+        ))
+        plt.title(factor_name)
+    plt.suptitle("大类因子在A股的历史数据分布")
+    plt.savefig(path + "\\H3 Plots\\Large Factors.png")
+
+overview_Large_factors()
+
+##############################################################################################################################
 #%% [markdown]
 # # STEP 5
 
 #%%
 # 假设了之前很多回归的计算结果
 from scipy.optimize import minimize
-All_Factors = ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE']
-Factor_income =pd.DataFrame(-1+2*np.random.random((170,9)),columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE'],
+Factor_income =pd.DataFrame(-1+2*np.random.random((121,9)),columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE'],
                             index = get_neutralized_data('ps_ttm').index)
 Stock_predict = pd.DataFrame(-0.1+np.random.random((300,1))/3,columns=['yeild_forecast'],index = get_neutralized_data('ps_ttm').columns)
 Factor_predict = pd.DataFrame(-0.1+np.random.random((300,9))/3,columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE'],index = get_neutralized_data('ps_ttm').columns)
 #每只股票的在不同时间点的残差，可以等于实际的股票收益率-预测的股票收益率
-Stock_Residual = pd.DataFrame(-0.1+np.random.random((170,300))/5,columns = get_neutralized_data('ps_ttm').columns,index = get_neutralized_data('ps_ttm').index)
+Stock_Residual = pd.DataFrame(-0.1+np.random.random((121,300))/5,columns = get_neutralized_data('ps_ttm').columns,index = get_neutralized_data('ps_ttm').index)
 
 
 class Portfolio_Optimization(object):
@@ -939,7 +997,7 @@ class Portfolio_Optimization(object):
         #非线性规划
         x0 = np.random.rand(300)
         x0 /= sum(x0)
-        Non_target_factors = list(set(All_Factors) ^ set(self.Target_factors))
+        Non_target_factors = list(set(Large_Factors_list) ^ set(self.Target_factors))
         n = len(Non_target_factors)
         m = list(range(n))
         b = [0]*9
@@ -981,4 +1039,4 @@ class Portfolio_Optimization(object):
         return  Stock_weight, -res.fun
 
 # 目标纯因子为'VALUE','GROWTH','PROFIT'，使用历史时间段为过去32个月，仅对非目标纯因子偏离做约束条件，最大化收益，返回权重和组合收益
-[Stock_weight,Portfolio_Return]= Portfolio_Optimization(['VALUE','GROWTH','PROFIT'],32).optimization()
+#[Stock_weight,Portfolio_Return]= Portfolio_Optimization(['VALUE','GROWTH','PROFIT'],32).optimization()
