@@ -11,78 +11,8 @@ plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
 import math
 from statsmodels import regression
 import statsmodels.api as sm
-
-#%%
-def get_factor_list():
-    '''
-    Return:
-        factor list. (list)
-    '''
-    # The factor list stores the factor string I need.
-    return [
-        "pe_ttm", 
-        "pb_lyr", 
-        "pcf_ncf_ttm", 
-        "ps_ttm", 
-        "yoyprofit",
-        "yoy_or", 
-        "yoyroe", 
-        # "roe_ttm",  # weired
-        # "roa_ttm",  # weired
-        "debttoassets", 
-        "assetsturn", 
-        "invturn",  
-        "pct_chg", 
-        # "underlyinghisvol_90d", 
-        # "tech_turnoverrate20", 
-        # "tech_turnoverrate60", 
-        # "val_lnmv"
-        # The last 4 data haven't been downloaded yet for quota exceeded.
-    ]
-
-#%%
-def get_data(factor_name): # get data from disk.
-    '''
-    Parameter:
-        factor_name: name of factors in Wind. (str)
-    Return:
-        forward-filled factor data. (pd.DataFrame)
-            index: months. (np.int64)
-            columns: stocks code list. (str)
-    '''
-    data = pd.read_csv(
-        open(
-            # Extract raw data.
-            path + "\\H3 Data\\Raw Data\\" + factor_name + ".csv", 
-            'r', # read-only mode for data protection.
-            encoding = "utf-8"
-        ), 
-        index_col = [0]
-    )
-    # Forward-fill nan to make quarter report fill the month.
-    data.fillna(method = 'ffill', inplace = True) 
-    return data
-
-#%%
-def get_processed_data(factor_name): # get data from disk.
-    '''
-    Parameter:
-        factor_name: name of factors in Wind. (str)
-    Return:
-        processed factor data. (pd.DataFrame)
-            index: months. (np.int64)
-            columns: stocks code list. (str)
-    '''
-    data = pd.read_csv(
-        open(
-            # Extract raw data.
-            path + "\\H3 Data\\Processed Data\\" + factor_name + ".csv", 
-            'r', # read-only mode for data protection.
-            encoding = "utf-8"
-        ), 
-        index_col = [0]
-    )
-    return data
+from Data_Fetching_and_Storing import get_factor_list
+from Data_Processing import get_data, get_values, get_processed_data
 
 #%%
 def get_industry_data():
@@ -170,17 +100,17 @@ def plot_industry_comparison():
     plt.savefig(path + "\\H3 Plots\\Industry Comparison.png")
 
 #%%
-# plot_industry_comparison()
+plot_industry_comparison()
 
 #%%
-# print(round(
-#     industry_comparison("pcf_ncf_ttm").loc["有色金属", "pcf_ncf_ttm"] /  
-#     industry_comparison("pcf_ncf_ttm").loc["家用电器", "pcf_ncf_ttm"] , 
-#     0
-# ))
+print(round(
+    industry_comparison("pcf_ncf_ttm").loc["有色金属", "pcf_ncf_ttm"] /  
+    industry_comparison("pcf_ncf_ttm").loc["家用电器", "pcf_ncf_ttm"] , 
+    0
+))
 
 #%%
-# get_industry_data()
+get_industry_data()
 
 #%%
 def get_industry_exposure(factor_name):
@@ -222,24 +152,6 @@ def get_industry_exposure(factor_name):
         industry_exposure.fillna(0, inplace = True)
         industry_exposure.to_csv(file_path)
     return industry_exposure
-
-#%%
-# get_industry_exposure()
-
-#%%
-def get_values(data):
-    '''
-    Parameter:
-        data: input data. (pd.DataFrame)
-    Return:
-        a list of all values in data except nan. (list)
-    '''
-    # Collect all non-nan value into data_list.
-    value_list = []
-    for i in range(len(data.columns)): 
-        # is there a way to avoid loop?
-        value_list += data.iloc[:, i].dropna().tolist()
-    return value_list
 
 #%%
 def neutralize(
@@ -325,12 +237,12 @@ def overview_neutralization(factor_list):
     plt.savefig(path + "\\H3 Plots\\overview neutralization.png")
 
 #%%
-# overview_neutralization([
-#     "pb_lyr", 
-#     "debttoassets", 
-#     "assetsturn", 
-#     "invturn"
-# ])
+overview_neutralization([
+    "pb_lyr", 
+    "debttoassets", 
+    "assetsturn", 
+    "invturn"
+])
 
 #%%
 def neutralize_and_store_data():
@@ -349,7 +261,7 @@ def neutralize_and_store_data():
         neutralized_data.to_csv(file_path)
 
 #%%
-# neutralize_and_store_data()
+neutralize_and_store_data()
 
 #%%
 def get_neutralized_data(factor_name):

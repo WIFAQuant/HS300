@@ -24,24 +24,24 @@ def get_factor_list():
     '''
     # The factor list stores the factor string I need.
     return [
-        # "pe_ttm", 
-        # "pb_lyr", 
-        # "pcf_ncf_ttm", 
-        # "ps_ttm", 
-        # "yoyprofit",
-        # "yoy_or", 
-        # "yoyroe", 
-        # "roe_ttm", 
-        # "roa_ttm", 
-        # "debttoassets", 
-        # "assetsturn", 
-        # "invturn",  
-        # "pct_chg", 
-        "underlyinghisvol_90d", 
-        "tech_turnoverrate20", 
-        "tech_turnoverrate60", 
+        "pe_ttm", 
+        "pb_lyr", 
+        "pcf_ncf_ttm", 
+        "ps_ttm", 
+        "yoyprofit",
+        "yoy_or", 
+        "yoyroe", 
+        # "roe_ttm2", 
+        # "roa_ttm2", 
+        "debttoassets", 
+        "assetsturn", 
+        "invturn",  
+        "pct_chg", 
+        # "underlyinghisvol_90d", 
+        # "tech_turnoverrate20", 
+        # "tech_turnoverrate60", 
         # "industry_sw", 
-        "val_lnmv"
+        # "val_lnmv"
         # The last 5 data haven't been downloaded yet for quota exceeded.
     ]
 

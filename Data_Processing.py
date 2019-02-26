@@ -8,34 +8,7 @@ sns.set(style = "darkgrid")                  # set seaborn style.
 import matplotlib.pyplot as plt              # specify "plt".
 plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
 plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
-from  import get_factor_list
-
-#%%
-
-#%%
-def get_factor_list():
-    # The factor list stores the factor string I need.
-    return [
-        "pe_ttm", 
-        "pb_lyr", 
-        "pcf_ncf_ttm", 
-        "ps_ttm", 
-        "yoyprofit",
-        "yoy_or", 
-        "yoyroe", 
-        # "roe_ttm",  # weired
-        # "roa_ttm",  # weired
-        "debttoassets", 
-        "assetsturn", 
-        "invturn",  
-        "pct_chg", 
-        # "underlyinghisvol_90d", 
-        # "tech_turnoverrate20", 
-        # "tech_turnoverrate60", 
-        # "tech_turnoverrate120", 
-        # "val_lnmv"
-        # The last 5 data haven't been downloaded yet for quota exceeded.
-    ]
+from Data_Fetching_and_Storing import get_factor_list
 
 #%% [markdown]
 # # Step 2：Factor Data Processing.
@@ -63,6 +36,8 @@ def get_data(factor_name): # get data from disk.
     )
     # Forward-fill nan to make quarter report fill the month.
     data.fillna(method = 'ffill', inplace = True) 
+    # Make all date format in the same way.
+    data.index = pd.to_datetime(data.index).strftime('%Y%m%d')
     return data
 
 #%%

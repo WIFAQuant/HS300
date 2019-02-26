@@ -8,60 +8,9 @@ sns.set(style = "darkgrid")                  # set seaborn style.
 import matplotlib.pyplot as plt              # specify "plt".
 plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
 plt.rcParams['axes.unicode_minus'] = False   # For displaying minus sign.
-
-#%%
-def get_factor_list():
-    '''
-    Return:
-        factor list. (list)
-    '''
-    # The factor list stores the factor string I need.
-    return [
-        "pe_ttm", 
-        "pb_lyr", 
-        "pcf_ncf_ttm", 
-        "ps_ttm", 
-        "yoyprofit",
-        "yoy_or", 
-        "yoyroe", 
-        # "roe_ttm",  # weired
-        # "roa_ttm",  # weired
-        "debttoassets", 
-        "assetsturn", 
-        "invturn",  
-        "pct_chg", 
-        # "underlyinghisvol_90d", 
-        # "tech_turnoverrate20", 
-        # "tech_turnoverrate60", 
-        # "val_lnmv"
-        # The last 4 data haven't been downloaded yet for quota exceeded.
-    ]
-
-#%%
-def get_neutralized_data(factor_name):
-    '''
-    Parameter:
-        factor_name: name of factors in Wind. (str)
-    Return:
-        neutralized factor data. (pd.DataFrame)
-            index: months. (np.int64)
-            columns: stocks code list. (str)
-    '''
-    data = pd.read_csv(
-        open(
-            path + "\\H3 Data\\Neutralized Data\\" + factor_name + ".csv", 
-            'r', # read-only mode for data protection.
-            encoding = "utf-8"
-        ), 
-        index_col = [0]
-    )
-    data.index = pd.to_datetime(data.index).strftime('%Y%m%d')
-    return data
-
-#%%
-# Make get_data identical to get_neutralized_data.
-def get_data(factor_name):
-    return get_neutralized_data(factor_name)
+from Data_Fetching_and_Storing import get_factor_list
+from Data_Processing import get_processed_data, get_values
+from Data_Neutralization import get_neutralized_data
 
 #%% [markdown]
 # # STEP 3
@@ -112,7 +61,7 @@ class Large_factor_merge(object):
         Return:
             IC of Large Factor.         
         '''
-        stock_return = get_data('pct_chg')# This will be modified
+        stock_return = get_neutralized_data('pct_chg')# This will be modified
         datadict = {}
         for i in self.data.items:
             df = self.data[i]
@@ -172,11 +121,11 @@ Large_factor = pd.Panel(Factor_dict)
 from scipy.optimize import minimize
 All_Factors = ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE']
 Factor_income =pd.DataFrame(-1+2*np.random.random((170,9)),columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE'],
-                            index = get_data('ps_ttm').index)
-Stock_predict = pd.DataFrame(-0.1+np.random.random((300,1))/3,columns=['yeild_forecast'],index = get_data('ps_ttm').columns)
-Factor_predict = pd.DataFrame(-0.1+np.random.random((300,9))/3,columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE'],index = get_data('ps_ttm').columns)
+                            index = get_neutralized_data('ps_ttm').index)
+Stock_predict = pd.DataFrame(-0.1+np.random.random((300,1))/3,columns=['yeild_forecast'],index = get_neutralized_data('ps_ttm').columns)
+Factor_predict = pd.DataFrame(-0.1+np.random.random((300,9))/3,columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE'],index = get_neutralized_data('ps_ttm').columns)
 #每只股票的在不同时间点的残差，可以等于实际的股票收益率-预测的股票收益率
-Stock_Residual = pd.DataFrame(-0.1+np.random.random((170,300))/5,columns = get_data('ps_ttm').columns,index = get_data('ps_ttm').index)
+Stock_Residual = pd.DataFrame(-0.1+np.random.random((170,300))/5,columns = get_neutralized_data('ps_ttm').columns,index = get_neutralized_data('ps_ttm').index)
 
 
 class Portfolio_Optimization(object):

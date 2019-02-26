@@ -60,7 +60,7 @@ Ln_MarketValue|VAL_LNMV|对数市值
 > （数据保存在“H3 Data” ("HS300 Data" 的缩写) 文件夹中，格式为CSV，直接用全小写的万德指标名命名。
 > 即 "<万德指标名>.csv"，如 "pe_ttm.csv"）
 > 
-> - 获取与存储数据的代码详见“H3 Codes/0 Data Fetching and Storing.py” 文件。
+> - 获取与存储数据的代码详见“Data_Fetching_and_Storing.py” 文件。
 > 
 > - 获取的原始数据储存在"H3 Data/Raw Data"文件夹里。
 >
@@ -188,7 +188,7 @@ data.fillna(method = 'ffill', inplace = True)
 
 > 2.1， 2.2， 2.3的数据处理部分的：
 > 
-> - 代码详见“H3 Codes/1 Data Processing.py” 文件。
+> - 代码详见“Data_Processing.py” 文件。
 > 
 > - 数据保存在"H3 Data/Processed Data"文件夹里。
 
@@ -249,7 +249,7 @@ data.fillna(method = 'ffill', inplace = True)
 
 > 数据处理中性化部分的：
 >
-> - 代码详见“H3 Codes/2 Data Neutralization.py” 文件。
+> - 代码详见“Data_Neutralization.py” 文件。
 > - 数据保存在"H3 Data/Neutralized Data"文件夹里。
 
 最终经过所有因子数据处理步骤之后，原来的因子数据分布图变为了这样。
