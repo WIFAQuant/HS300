@@ -99,7 +99,7 @@ data.fillna(method = 'ffill', inplace = True)
 
 ![Filled.png](https://storage.live.com/items/A3FA4B9C0717EA26!53794?authkey=AH5Re-C6ttiO_oc)
 
-针对剩余的缺失数据，我们将在数据标准化处理后统一填充为零。
+针对剩余的缺失数据，我们将在数据[标准化](##2.3标准化)处理后统一填充为零。
 
 ## 2.2 去极值
 
