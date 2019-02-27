@@ -12,7 +12,10 @@ import seaborn as sns                        # for plotting.
 sns.set(style = "darkgrid")                  # set seaborn style.
 import matplotlib.pyplot as plt              # specify "plt".
 plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
-plt.rcParams['axes.unicode_minus'] = False     # For displaying minus sign.
+plt.rcParams['axes.unicode_minus'] = False   # For displaying minus sign.
+import math                                  # math calculation.
+from statsmodels import regression           # for OLS.
+import statsmodels.api as sm                 # for OLS result.
 
 #%%
 # Import Wind Module for getting data.
@@ -507,22 +510,7 @@ def overview_processed_data():
     plt.savefig(path + "\\H3 Plots\\Processed Data.png")
 
 #%%
-# overview_processed_data()
-
-#%%
-import os                                    # for getting working directory.
-path = os.getcwd()                           # current working directory.
-import pandas as pd                          # for wrapping csv file.
-import numpy as np                           # for numerical manipulation.
-import seaborn as sns                        # for plotting.
-sns.set(style = "darkgrid")                  # set seaborn style.
-import matplotlib.pyplot as plt              # specify "plt".
-plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
-plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
-import math
-from statsmodels import regression
-import statsmodels.api as sm
-
+overview_processed_data()
 
 #%%
 def get_industry_data():
