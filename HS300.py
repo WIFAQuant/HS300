@@ -57,9 +57,11 @@ def get_factor_list():
 #     "pct_chg_6m",
 #     "stdevry_3m",
 #     "stdevry_6m",不好从wsd中取,"pct_chg_1m", "pct_chg_3m","pct_chg_6m"是根据pct_chg计算的，波动率提取要填开始区间和截止区间（区间为近几个月）
-#%%
 
+#%%
 Large_Factors_list = ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE']
+
+#%%
 def get_hs300_stocks_list():
     '''
     Return:
@@ -256,7 +258,7 @@ class Filter(object):
         '''
         return self.data
     
-    def MAD(self, n = 100):
+    def MAD(self, n = 60):
         '''
         Parameter:
             n: how many times new median. (int)
