@@ -1,27 +1,21 @@
 #%% [markdown]
-# # 沪深300指数纯因子组合构建
+# # HS300指数纯因子组合构建
 # 
 # > WIFA量化组，2019年春。
+# 
+# ## Step 2: Factor Database building.
 
 #%%
-import os                                    # for getting working directory.
-path = os.getcwd()                           # current working directory.
-import pandas as pd                          # for wrapping csv file.
-import numpy as np                           # for numerical manipulation.
-import seaborn as sns                        # for plotting.
-sns.set(style = "darkgrid")                  # set seaborn style.
-import matplotlib.pyplot as plt              # specify "plt".
-plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
-plt.rcParams['axes.unicode_minus'] = False   # For displaying minus sign.
-import math                                  # math calculation.
-from statsmodels import regression           # for OLS.
-import statsmodels.api as sm                 # for OLS result.
+import os           # for getting working directory.
+path = "D:\\coco\WORK\WIFA\HS300-LiXuan"                      # current working directory.
+import pandas as pd # for wrapping csv file.
+import numpy as np
 
 #%%
 # Import Wind Module for getting data.
-import WindPy as w
-from WindPy import *
-w.start()
+# import WindPy as w
+# from WindPy import *
+# w.start()
 
 #%%
 def get_factor_list():
@@ -57,11 +51,9 @@ def get_factor_list():
 #     "pct_chg_6m",
 #     "stdevry_3m",
 #     "stdevry_6m",不好从wsd中取,"pct_chg_1m", "pct_chg_3m","pct_chg_6m"是根据pct_chg计算的，波动率提取要填开始区间和截止区间（区间为近几个月）
-
 #%%
+
 Large_Factors_list = ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE']
-
-#%%
 def get_hs300_stocks_list():
     '''
     Return:
@@ -92,8 +84,7 @@ def get_hs300_stocks_list():
     return list(hs300_data["HS300"])
 
 #%%
-get_hs300_stocks_list()
-
+# get_hs300_stocks_list()
 #%%
 def data_fetching_and_storing(
     start = "2005-01-01", 
@@ -118,10 +109,10 @@ def data_fetching_and_storing(
         )[1]             # the result is a tuple with the [1] part is what we need.
         # Make a new directory (H3 Data) for storing data.
         file_path = path + "\\H3 Data\\Raw Data\\" + factor + ".csv" # name the data file by it's factor string.
-        factor_data.to_csv(file_path) # store data.
+        factor_data.to_csv(file_path)                      # store data.
 
 #%%
-data_fetching_and_storing()
+# data_fetching_and_storing()
 
 #%%
 def sw_industry_data_fetching_and_storing():
@@ -146,16 +137,24 @@ def sw_industry_data_fetching_and_storing():
 #%%
 ##########################################################################################################################33
 
+import seaborn as sns                        # for plotting.
+sns.set(style = "darkgrid")                  # set seaborn style.
+import matplotlib.pyplot as plt              # specify "plt".
+plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
+plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
+
+
 #%% [markdown]
 # # Step 2：Factor Data Processing.
 # 
 # ## 2.1 Filtering & 2.2 Filling
 
 #%%
-def get_data(factor_name): # get data from disk.
+def get_data(factor_name,time): # get data from disk.
     '''
     Parameter:
         factor_name: name of factors in Wind. (str)
+        time:the year when data start.(str) as'2007'
     Return:
         forward-filled factor data. (pd.DataFrame)
             index: months. (np.int64)
@@ -197,8 +196,9 @@ def get_data(factor_name): # get data from disk.
     data.fillna(method = 'ffill', inplace = True)
     # Make all date format in the same way.
     data.index = pd.to_datetime(data.index).strftime('%Y%m%d')
-    data = data.loc['20090131':'20190131']
+    data = data.loc[str(time)+'0131':'20190131']
     return data
+
 
 #%%
 def get_values(data):
@@ -226,14 +226,14 @@ def overview():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data = get_data(get_factor_list()[i])
+            data = get_data(get_factor_list()[i],'2009')
         ))
         plt.title(get_factor_list()[i])
     plt.suptitle("不同因子在A股的历史数据分布")
     plt.savefig(path + "\\H3 Plots\\overview.png")
 
 #%%
-overview()
+# overview()
 
 #%% [markdown]
 # ## 2.1 Filter Extreme Value.
@@ -244,8 +244,8 @@ class Filter(object):
     Parameter:
         factor_name: name of factors in Wind. (str)
     '''
-    def __init__(self, factor_name):
-        data = get_data(factor_name)
+    def __init__(self, factor_name,time):
+        data = get_data(factor_name,time)
         self.data = data
         self.values = get_values(
             data = data
@@ -258,7 +258,7 @@ class Filter(object):
         '''
         return self.data
     
-    def MAD(self, n = 60):
+    def MAD(self, n = 100):
         '''
         Parameter:
             n: how many times new median. (int)
@@ -308,7 +308,7 @@ def overview_MAD():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data = Filter(get_factor_list()[i]).MAD()
+            data = Filter(get_factor_list()[i],'2009').MAD()
         ))
         plt.title(get_factor_list()[i])
     plt.suptitle("绝对值差中位数法(MAD法)去极值后")
@@ -326,7 +326,7 @@ def overview_three_sigma():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data = Filter(get_factor_list()[i]).three_sigma()
+            data = Filter(get_factor_list()[i],'2009').three_sigma()
         ))
         plt.title(get_factor_list()[i])
     plt.suptitle("3σ法去极值后")
@@ -344,16 +344,16 @@ def overview_percentile():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data = Filter(get_factor_list()[i]).percentile_filter()
+            data = Filter(get_factor_list()[i],'2009').percentile_filter()
         ))
         plt.title(get_factor_list()[i])
     plt.suptitle("百分位法去极值后")
     plt.savefig(path + "\\H3 Plots\\percentile.png")
 
 #%%
-overview_MAD()
-overview_three_sigma()
-overview_percentile()
+# overview_MAD()
+# overview_three_sigma()
+# overview_percentile()
 
 #%%
 def huge_deviation_original_data():
@@ -364,14 +364,14 @@ def huge_deviation_original_data():
     '''
     plt.figure(figsize = (8, 5))
     sns.distplot(get_values(
-        data = Filter("pcf_ncf_ttm").original()
+        data = Filter("pcf_ncf_ttm",'2009').original()
     ), label = "Percentile")
     plt.legend()
     plt.title("每股现金流：原始数据")
     plt.savefig(path + "\\H3 Plots\\original pcf_ncf_ttm.png")
 
 #%%
-huge_deviation_original_data()
+# huge_deviation_original_data()
 
 #%%
 def huge_deviation_filtered_data():
@@ -382,14 +382,14 @@ def huge_deviation_filtered_data():
     '''
     plt.figure(figsize = (8, 5))
     sns.distplot(get_values(
-        data = Filter("pcf_ncf_ttm").percentile_filter()
+        data = Filter("pcf_ncf_ttm",'2009').percentile_filter()
     ), label = "Percentile")
     plt.legend()
     plt.title("每股现金流：百分位去极值")
     plt.savefig(path + "\\H3 Plots\\percentile filter pcf_ncf_ttm.png")
 
 #%%
-huge_deviation_filtered_data()
+# huge_deviation_filtered_data()
 
 #%%
 def huge_deviation_filter_method_comparison():
@@ -400,23 +400,23 @@ def huge_deviation_filter_method_comparison():
     '''
     plt.figure(figsize = (8, 5))
     sns.distplot(get_values(
-        data = Filter("pcf_ncf_ttm").original()
+        data = Filter("pcf_ncf_ttm",'2009').original()
     ), label = "Original")
     sns.distplot(get_values(
-        data = Filter("pcf_ncf_ttm").MAD()
+        data = Filter("pcf_ncf_ttm",'2009').MAD()
     ), label = "MAD")
     sns.distplot(get_values(
-        data = Filter("pcf_ncf_ttm").three_sigma()
+        data = Filter("pcf_ncf_ttm",'2009').three_sigma()
     ), label = "3σ")
     sns.distplot(get_values(
-        data = Filter("pcf_ncf_ttm").percentile_filter()
+        data = Filter("pcf_ncf_ttm",'2009').percentile_filter()
     ), label = "Percentile")
     plt.legend()
     plt.title("不同去极值方法的比较（以每股现金流为例）")
     plt.savefig(path + "\\H3 Plots\\Comparison(pcf_ncf_ttm).png")
 
 #%%
-huge_deviation_filter_method_comparison()
+# huge_deviation_filter_method_comparison()
 
 #%%
 def filter_method_comparison():
@@ -427,59 +427,60 @@ def filter_method_comparison():
     '''
     plt.figure(figsize = (8, 5))
     sns.distplot(get_values(
-        data = Filter("assetsturn").original()
+        data = Filter("assetsturn",'2009').original()
     ), label = "Original")
     sns.distplot(get_values(
-        data = Filter("assetsturn").MAD()
+        data = Filter("assetsturn",'2009').MAD()
     ), label = "MAD")
     sns.distplot(get_values(
-        data = Filter("assetsturn").three_sigma()
+        data = Filter("assetsturn",'2009').three_sigma()
     ), label = "3σ")
     sns.distplot(get_values(
-        data = Filter("assetsturn").percentile_filter()
+        data = Filter("assetsturn",'2009').percentile_filter()
     ), label = "Percentile")
     plt.legend()
     plt.title("不同去极值方法的比较（以资产周转率为例）")
     plt.savefig(path + "\\H3 Plots\\Comparison(assetsturn).png")
 
 #%%
-filter_method_comparison()
+# filter_method_comparison()
 
 #%% [markdown]
 # ## 2.3 standardize
 
 #%%
 # Use z-score method to standardize.
-def standardize(factor_name):
+def standardize(factor_name,time):
     '''
     Parameter:
         factor_name: name of factors in Wind. (str)
+        time:the time the data start
     Return:
         standardized and Filtered (MAD) data. (pd.DataFrame)
     '''
-    data = Filter(factor_name).MAD()
+    data = Filter(factor_name,time).MAD()
     data = data.fillna(0)
     mean = np.mean(data)
     std = np.std(data)
     return (data - mean) / std
 
 #%%
-def process_and_store_data():
+def process_and_store_data(time):
     '''
     Return:
         save processed data in "\\H3 Data\\Processed Data\\".
         ("processed" means filtered & standardized.)
     '''
     for factor in get_factor_list():
-        processed_data = standardize(factor)
-        file_path = path + "\\H3 Data\\Processed Data\\" + factor + ".csv"
+        processed_data = standardize(factor,time)
+        file_path = path + "\\H3 Data\\Processed Data\\" + factor + '(after'+time+')'".csv"
         processed_data.to_csv(file_path)
 
 #%%
-# process_and_store_data()
-
+process_and_store_data('2009')
+process_and_store_data('2007')
 #%%
-def get_processed_data(factor_name): # get data from disk.
+def get_processed_data(factor_name,time): # get data from disk.
     '''
     Parameter:
         factor_name: name of factors in Wind. (str)
@@ -490,7 +491,7 @@ def get_processed_data(factor_name): # get data from disk.
     '''
     data = pd.read_csv(
         open(
-            path + "\\H3 Data\\Processed Data\\" + factor_name + ".csv", 
+            path + "\\H3 Data\\Processed Data\\" + factor_name +'(after'+time+')' ".csv",
             'r', # read-only mode for data protection.
             encoding = "utf-8"
         ), 
@@ -505,14 +506,26 @@ def overview_processed_data():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data = get_processed_data(get_factor_list()[i])
+            data = get_processed_data(get_factor_list()[i],'2009')
         ))
         plt.title(get_factor_list()[i])
     plt.suptitle("经过处理后的A股因子数据密度分布图一览")
     plt.savefig(path + "\\H3 Plots\\Processed Data.png")
 
 #%%
-overview_processed_data()
+# overview_processed_data()
+
+#%%
+
+import pandas as pd                          # for wrapping csv file.
+import numpy as np                           # for numerical manipulation.
+import seaborn as sns                        # for plotting.
+sns.set(style = "darkgrid")                  # set seaborn style.
+import matplotlib.pyplot as plt              # specify "plt".
+plt.rcParams['font.sans-serif'] = ['SimHei'] # For displaying chinese.
+plt.rcParams['axes.unicode_minus']=False     # For displaying minus sign.
+import statsmodels.api as sm
+
 
 #%%
 def get_industry_data():
@@ -520,7 +533,15 @@ def get_industry_data():
     Return:
         SHENWAN industry data. (pd.DataFrame)      
     '''
-    return get_processed_data("industry_sw")
+    data = pd.read_csv(
+            open(
+                # Extract raw data.
+                path + "\\H3 Data\\Raw Data\\" + 'industry_sw' + ".csv", 'r',  # read-only mode for data protection.
+                encoding="utf-8"
+            ),
+            index_col=[0]
+        )
+    return data
 
 #%%
 def get_industry_list():
@@ -543,14 +564,14 @@ def industry_comparison(factor_name):
     # All industry in HS300.
     sw_industry_list = get_industry_list()
     # Use certain factor data for comparison example between industry.
-    compare_data = get_data(factor_name)
+    compare_data = get_data(factor_name,'2009')
     compare_industry = pd.DataFrame(
         index = sw_industry_list, 
         columns = [factor_name]
     )
     for industry in sw_industry_list:
-        industry_stock_code_list = list(get_data("industry_sw")[
-            get_data("industry_sw").iloc[:, 0] == industry
+        industry_stock_code_list = list(get_industry_data()[
+                                            get_industry_data().iloc[:, 0] == industry # 此处可能会有问题
         ].index)
         # Some industry is not in HS300. 
         try:
@@ -600,14 +621,17 @@ def plot_industry_comparison():
     plt.savefig(path + "\\H3 Plots\\Industry Comparison.png")
 
 #%%
-plot_industry_comparison()
+# plot_industry_comparison()
 
 #%%
-print(round(
-    industry_comparison("pcf_ncf_ttm").loc["有色金属", "pcf_ncf_ttm"] /  
-    industry_comparison("pcf_ncf_ttm").loc["家用电器", "pcf_ncf_ttm"] , 
-    0
-))
+# print(round(
+#     industry_comparison("pcf_ncf_ttm").loc["有色金属", "pcf_ncf_ttm"] /  
+#     industry_comparison("pcf_ncf_ttm").loc["家用电器", "pcf_ncf_ttm"] , 
+#     0
+# ))
+
+#%%
+# get_industry_data()
 
 #%%
 def get_industry_exposure(factor_name):
@@ -630,7 +654,7 @@ def get_industry_exposure(factor_name):
     else:
         # Don't know why but different factor data has different hs300 stocks list, 
         # so specify which factor is essential.
-        hs300_stock_list = list(get_data(factor_name).columns)
+        hs300_stock_list = list(get_data(factor_name,'2009').columns)
         industry_exposure = pd.DataFrame(
             index = get_industry_list(), 
             columns = hs300_stock_list
@@ -652,7 +676,7 @@ def get_industry_exposure(factor_name):
 
 #%%
 def neutralize(
-    factor_name, 
+    factor_name, time,
     market_capital = True, 
     industry = True
 ):
@@ -664,10 +688,10 @@ def neutralize(
     Return:
         neutralized data. (pd.DataFrame)
     '''
-    y = get_processed_data(factor_name).T.fillna(0) # don't know why but there's still nan.
+    y = get_processed_data(factor_name,time).T.fillna(0) # don't know why but there's still nan.
     industry_dummy = get_industry_exposure(factor_name)
     if market_capital:
-        ln_market_capital = get_data("val_lnmv")
+        ln_market_capital = get_data("val_lnmv",'2009')
         if industry:
             x = pd.concat(
                 [
@@ -694,11 +718,11 @@ def plot_industry_neutralization(factor_name):
     '''
     plt.figure(figsize = (8, 5))
     sns.kdeplot(get_values(
-        data = get_processed_data(factor_name)
+        data = get_processed_data(factor_name,'2009')
     ), label = "未经中性化")
     sns.kdeplot(get_values(
         data = neutralize(
-            factor_name, 
+            factor_name,'2009',
             market_capital = False, 
             industry = True
         )
@@ -719,11 +743,11 @@ def overview_neutralization(factor_list):
     for i in range(len(factor_list)):
         plt.subplot(int("22" + str(i+1)))
         sns.kdeplot(get_values(
-            data = get_processed_data(factor_list[i])
+            data = get_processed_data(factor_list[i],'2009')
         ), label = "未经中性化")
         sns.kdeplot(get_values(
             data = neutralize(
-                factor_list[i], 
+                factor_list[i], '2009',
                 market_capital = False, 
                 industry = True
             )
@@ -751,7 +775,7 @@ def neutralize_and_store_data():
     for factor in get_factor_list():
         file_path = path + "\\H3 Data\\Neutralized Data\\" + factor + ".csv"
         neutralized_data = neutralize(
-            factor, 
+            factor, '2009',
             market_capital = False, 
             industry = True
         )
@@ -800,10 +824,47 @@ overview_after_data_processing()
 ########################################################################################################################
 #%% [markdown]
 # # STEP 3
+# 因为step3里面要用到前两年的数据，所以要先对加上前两年的全部数据再数据处理一次
+from sklearn import preprocessing
+def get_and_store_2007data():
+    '''
+    Return:
+        save processed data in "\\H3 Data\\Processed Data\\".
+        ("processed" means filtered & standardized.)
+    '''
+    for factor in get_factor_list():
+        file_path = path + "\\H3 Data\\Processed Data since 2007\\" + factor + ".csv"
+        neutralized_data = neutralize(
+            factor,'2007',
+            market_capital=False,
+            industry=True
+        )
+        neutralized_data.to_csv(file_path)
 
+get_and_store_2007data()
+
+def get_2007data(factor_name):
+    '''
+    Parameter:
+        factor_name: name of factors in Wind. (str)
+    Return:
+        neutralized factor data. (pd.DataFrame)
+            index: months. (np.int64)
+            columns: stocks code list. (str)
+    '''
+
+    data = pd.read_csv(
+            open(
+                path + "\\H3 Data\\Processed Data since 2007\\" + factor_name + ".csv",
+                'r', # read-only mode for data protection.
+                encoding = "utf-8"
+            ),
+            index_col = [0]
+        )
+    return data
 #%%
 # Turn dataframe into panel data. 
-def get_group_data(factor_list):
+def get_group_data(factor_list,time):
     '''
     Parameter:
         factor_list: list of factor names. (str list)
@@ -811,9 +872,14 @@ def get_group_data(factor_list):
         panel data of all factors data. (pd.Panel)
     '''
     datadict = {}
-    for i in factor_list:
-        df = get_neutralized_data(i) # this should be the processed data
-        datadict[i] = df
+    if time =='2007':
+        for i in factor_list:
+            df = get_2007data(i) # this should be the processed data
+            datadict[i] = df
+    elif time =='2009':
+        for i in factor_list:
+            df = get_neutralized_data(i) # this should be the processed data
+            datadict[i] = df
     panel = pd.Panel(datadict)
     return panel
 
@@ -838,8 +904,10 @@ class Large_factor_merge(object):
             list = ["stdevry_3m","stdevry_6m"]
         elif Large_factor == 'LIQUIDITY':
             list = ["tech_turnoverrate60","tech_turnoverrate20"]
-        data = get_group_data(list)
+        data_2009 = get_group_data(list,'2009')
+        data = get_group_data(list, '2007')
         self.data = data
+        self.data_2009 = data_2009
         self.Large_factor = Large_factor
     # Define the following function for you can read clearly and can acquire the data of every step.
 
@@ -848,7 +916,7 @@ class Large_factor_merge(object):
         Return:
             IC of Large Factor.         
         '''
-        stock_return = get_neutralized_data('pct_chg')# This will be modified
+        stock_return = get_2007data('pct_chg_1m')# This will be modified
         datadict = {}
         for i in self.data.items:
             df = self.data[i]
@@ -862,52 +930,66 @@ class Large_factor_merge(object):
         IC_Large = pd.Panel(datadict)
         return IC_Large
 
-    def Caculate_IR(self):
-        '''
-        Return:
-            IR of Large Factor. 
-        '''
+    def Factors_merge_Static(self):
         IC_Large = self.Caculate_IC()
-        weight_df = pd.DataFrame(columns=['weights'],index=self.data.items)
+        weight_df = pd.DataFrame(columns=['weights'], index=self.data.items)
         weight = []
         for i in IC_Large.items:
             df = IC_Large[i]
-            IR = df.iloc[-24:,0].mean()/df.iloc[-24:,0].std()
+            IR = df.iloc[-24:, 0].mean() / df.iloc[-24:, 0].std()
             weight.append(IR)
-        weight = [x/sum(weight) for x in weight] #adjust the sum of weight to 1.0
+        #weight = [x / sum(weight) for x in weight]  # adjust the sum of weight to 1.0
         weight_df['weights'] = weight
-        return weight_df
-
-    def Factors_merge(self):
-        '''
-        Return:
-            the merged large factor data.
-        '''
-        weight = self.Caculate_IR()
-        # I don't find more attribute for panel data for sum.
-        Factors_sum = pd.DataFrame(0,columns=self.data.minor_axis,index=self.data.major_axis)
+        weight = weight_df
+        Factors_sum = pd.DataFrame(0, columns=self.data_2009.minor_axis, index=self.data_2009.major_axis)
         for i in self.data.items:
-            df = self.data[i]
-            new_df = df*weight.loc[i,'weights']
-            Factors_sum = Factors_sum +new_df
+            df = self.data_2009[i]
+            new_df = df * weight.loc[i, 'weights']
+            Factors_sum = Factors_sum + new_df
+        return Factors_sum
+
+    def Factors_merge_dynamic(self):
+        IC_Large = self.Caculate_IC()
+        weight_df = pd.DataFrame(columns=IC_Large.major_axis[24:], index=IC_Large.items)
+        for i in IC_Large.items:
+            for j in range(24, len(IC_Large.major_axis)):
+                df = IC_Large[i]
+                IR = df.iloc[j - 23:j+1, 0].mean() / df.iloc[j - 23:j+1, 0].std()
+                weight_df.loc[i, IC_Large.major_axis[j]] = IR
+        #weight_df = weight_df.apply(lambda x: x / sum(x))
+        weight = weight_df
+        Factors_sum = pd.DataFrame(0, columns=self.data.minor_axis, index=weight.columns)
+        for i in self.data_2009.items:
+            df = self.data_2009[i]
+            new_df = df.mul(weight.loc[i], axis=0)
+            Factors_sum = Factors_sum + new_df
         return Factors_sum
 
 #%%
-def Merge_and_store_factors():
+def Merge_and_store_factors_dynamic():
     Factor_dict = {}
     for i in ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY']:
-        Factor_data = Large_factor_merge(i).Factors_merge()
+        Factor_data = Large_factor_merge(i).Factors_merge_dynamic()
         Factor_dict[i] = Factor_data
-        file_path = path + "\\H3 Data\\large factor data\\" + i + ".csv"
+        file_path = path + "\\H3 Data\\large factor data dynamic\\" + i + ".csv"
         Factor_data.to_csv(file_path)
     Large_factor = pd.Panel(Factor_dict)
     return Large_factor
-Large_factor = Merge_and_store_factors()
+Large_factor_dynamic = Merge_and_store_factors_dynamic()
 # when you want to use one factor,you can edit'Large_factor[the name of the factor]'
-
+def Merge_and_store_factors_Static():
+    Factor_dict = {}
+    for i in ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY']:
+        Factor_data = Large_factor_merge(i).Factors_merge_Static()
+        Factor_dict[i] = Factor_data
+        file_path = path + "\\H3 Data\\large factor data Static\\" + i + ".csv"
+        Factor_data.to_csv(file_path)
+    Large_factor = pd.Panel(Factor_dict)
+    return Large_factor
+Large_factor_Static = Merge_and_store_factors_Static()
 
 #%%
-def get_Large_Factors(factor_name):
+def get_Large_Factors(factor_name,type):
     '''
     Parameter:
         factor_name: name of factors in Wind. (str)
@@ -916,9 +998,10 @@ def get_Large_Factors(factor_name):
             index: months. (np.int64)
             columns: stocks code list. (str)
     '''
+
     data = pd.read_csv(
         open(
-            path + "\\H3 Data\\large factor data\\" + factor_name + ".csv",
+            path + "\\H3 Data\\large factor data "+type+"\\" + factor_name + ".csv",
             'r', # read-only mode for data protection.
             encoding = "utf-8"
         ),
@@ -927,21 +1010,95 @@ def get_Large_Factors(factor_name):
     return data
 
 #%%
-def overview_Large_factors():
+def overview_Large_factors(type):
     # Get an overview of data after processing.
     plt.figure(figsize = (10, 10))
     for i in range(7):
         plt.subplot(int("33" + str(i+1)))
         factor_name = Large_Factors_list[i]
         sns.distplot(get_values(
-            data = get_Large_Factors(factor_name)
+            data = get_Large_Factors(factor_name,type)
         ))
         plt.title(factor_name)
-    plt.suptitle("大类因子在A股的历史数据分布")
-    plt.savefig(path + "\\H3 Plots\\Large Factors.png")
+    plt.suptitle("大类因子在A股的历史数据分布("+type+' synthesis)')
+    plt.savefig(path + "\\H3 Plots\\Large Factors "+type+".png")
 
-overview_Large_factors()
+overview_Large_factors('dynamic')
+overview_Large_factors('Static')
+##############################################################################################################################
+#%% [markdown]
+# # STEP 4
 
+#%% 多元线性回归
+def get_return_data():
+    return_data = pd.read_csv(
+        open(
+            path + '\H3 Data\Processed Data\pct_chg_1m.csv',
+            'r', # read-only mode for data protection.
+            encoding = "utf-8"
+        ),
+        index_col = [0]
+    )
+    return return_data
+        
+def get_regression_data(time, type):
+    # get 7+1 data list for one stock 
+    data = pd.DataFrame(columns=['return','VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY'])
+    for factor_name in ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY']:
+        data[factor_name]=get_Large_Factors(factor_name,type).loc[time]
+        
+    data['return'] = get_return_data().loc[time]
+    return data
+    
+
+def regression_model(y,X):
+    model = sm.WLS(y,X) #加权最小二乘法 解决异方差性
+    results = model.fit()
+    # results.summary
+    return results.params
+
+def run_regression(type):
+    time_list = get_Large_Factors('VALUE',type).index[:-1]
+    param_df = pd.DataFrame(columns = time_list)
+    for time in time_list:
+        regression_data = get_regression_data(time, type)
+        y = regression_data['return']
+        X = regression_data.iloc[:,1:]
+        param = regression_model(y,X)
+        param_df[time] = param
+    return param_df
+        
+# run_regression('Static')==>进行回归
+ 
+#%% 估计因子预期收益，此处采用N=12的历史均值法
+def estimated_factor_expected_income(type):
+    F = run_regression(type).T
+    N = 12
+    time_list = get_Large_Factors('VALUE',type).index
+    F_predict = pd.DataFrame(columns=F.columns)
+    for i in range(N,len(time_list)):
+        F_predict.loc[time_list[i]] =list(F.iloc[i-N:i].mean())
+        
+    return F_predict
+ 
+#%% 收益预测模型
+def load_of_factor(time, type):
+    # 因子载荷矩阵 
+    data = pd.DataFrame(columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY'])
+    for factor_name in ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY']:
+        data[factor_name]=get_Large_Factors(factor_name,type).loc[time]
+        
+    return data
+
+def calculate_expected_return(type):
+    F_predict = estimated_factor_expected_income(type)
+    time_list = get_Large_Factors('VALUE',type).index
+    f_predict = F_predict.iloc[-1]
+    X = load_of_factor(time_list[-1], type)
+    r_predict = X.mul(f_predict,axis=1).T.sum()
+    return r_predict
+    
+# calculate_expected_return('Static')==>得到r_predict
 ##############################################################################################################################
 #%% [markdown]
 # # STEP 5
