@@ -30,7 +30,7 @@
 最初选取因子|最终确定因子|因子解释
 :--:|:--:|:--:
 EPS_TTM/P|PE_TTM|市盈率
-BPS_LR/P|PB_LF|指定日最新公告股东权益
+BPS_LR/P|PB_LYR|市净率
 CFPS_TTM/P|PCF_NCF_TTM|市现率（现金净流量）
 SP_TTM/P|PS_TTM|市销率
 NetProfit_SQ_YOY|YOYPROFIT|净利润同比增长率
@@ -44,8 +44,8 @@ InvTurnover|INVTURN|存货周转率
 Ret1M|PCT_CHG|涨跌幅
 Ret3M|PCT_CHG|涨跌幅
 Ret6M|PCT_CHG|涨跌幅
-RealizedVol_3M|STDEVRY|3月年化波动率
-RealizedVol_6M|STDEVRY|6月年化波动率
+RealizedVol_3M|UNDERLYINGHISVOL_90D|90日历史波动率
+RealizedVol_6M|UNDERLYINGHISVOL_90D|90日历史波动率
 Turnover_ave_1M|TECH_TURNOVERRATE20|20日平均换手率
 Turnover_ave_3M|TECH_TURNOVERRATE60|60日平均换手率
 中信一级行业列表|INDUSTRY_SW|申万行业名称
@@ -63,6 +63,7 @@ Ln_MarketValue|VAL_LNMV|对数市值
 > - 获取与存储数据的代码详见“Data_Fetching_and_Storing.py” 文件。
 > 
 > - 获取的原始数据储存在"H3 Data/Raw Data"文件夹里。
+>
 
 数据格式如下：
 
@@ -79,10 +80,8 @@ Ln_MarketValue|VAL_LNMV|对数市值
 
 ![overview.png](https://storage.live.com/items/A3FA4B9C0717EA26!53613?authkey=AH5Re-C6ttiO_oc)
 
-从图中可以看出原始的因子数据都存在极差过大、分布非常不均匀的现象。
-大多数数据集中于一个值附近，但是总体来看值域又非常广。
-
-过大或过小的数据都会影响到统计分析的结果，所以需要对数据进行处理。
+从图中可以看出绝大多数因子都存在极差过大、分布不均的现象。
+而过大或过小的数据会影响到统计分析的结果，所以需要对数据进行处理。
 
 ## 2.1 填补缺失值
 
@@ -296,3 +295,28 @@ data.fillna(method = 'ffill', inplace = True)
 >
 > - 代码详见“Data_Composition.py” 文件。
 > - 数据保存在"H3 Data/Composition Data"文件夹里。
+
+# Step 4：收益预测模型
+
+### 多元线性回归
+$$r_j^t = \sum_{k=1}^K X_{jk}^t*f_k^t+u_j^t$$
+
+为解决异方差性，使用了WLS加权最小二乘法进行回归
+
+### 估计因子预期收益 
+
+由多元线性回归可以得到所有因子的历史收益率序列，使用历史数据估计T+1期因子预期收益率的方法有很多种。
+
+此处采取历史均值法，N=12。（即采取前12个月的因子历史收益率均值作为T+1期因子的预期收益率）
+
+$f_k^{T+1}=\dfrac{\sum_{t=T-N+1}T f_k^t}{N}$
+
+
+
+### 计算股票预期收益
+
+根据因子预期收益估计值$(f_1^{T+1},f_2^{T+1},f_3^{T+1}...f_K^{T+1})$与T期因子载荷矩阵$X^{T}$得到股票预期收益：
+
+$r_j^{T+1}=\sum_{k=1}^K X_{jk}^{T}*f_k^{T+1}$
+
+即可计算出T+1期个股的预期收益率 $(r_1^{T+1},r_2^{T+1},r_3^{T+1}...r_N^{T+1})$
