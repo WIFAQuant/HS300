@@ -201,6 +201,16 @@ def get_data(factor_name): # get data from disk.
     return data
 
 #%%
+data_raw = pd.read_csv(open(
+    path + "\\H3 Data\\Raw Data\\pct_chg.csv", 
+    'r', 
+    encoding = "utf-8"
+), index_col = [0])
+if factor_name == "pct_chg_1m":
+    pass
+elif factor_name == 
+
+#%%
 def get_values(data):
     '''
     Parameter:
