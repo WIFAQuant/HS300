@@ -7,7 +7,7 @@
 
 #%%
 import os           # for getting working directory.
-path = "D:\\coco\WORK\WIFA\HS300-LiXuan"                      # current working directory.
+path = os.getcwd()  # current working directory.
 import pandas as pd # for wrapping csv file.
 import numpy as np
 
