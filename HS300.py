@@ -265,19 +265,27 @@ def sw_industry_data_fetching_and_storing():
 # %%
 
 
-def get_data(factor_name):
+def get_data(
+    factor_name, 
+    category="Raw", 
+    start_year="2009"
+):
     '''
     Parameter:
         factor_name: name of factors in Wind. (str)
-        time:the year when data start.(str) as'2007'
+        category: which category of data. (str)
+            - "Raw"
+            - "Processed"
+            - "Neutralized"
+        start_year: the year when data start. (str) 
     Return:
-        forward-filled raw factor data. (pd.DataFrame)
+        forward-filled factor data. (pd.DataFrame)
             index: months. (np.int64)
             columns: stocks code list. (str)
     '''
     data = pd.read_csv(open(
         # Extract raw data.
-        path + "\\H3 Data\\Raw Data\\" + factor_name + ".csv",
+        path + "\\H3 Data\\" + category + " Data\\" + factor_name + ".csv",
         # read-only mode for data protection.
         'r',
         encoding="utf-8"
@@ -286,12 +294,24 @@ def get_data(factor_name):
     # Forward-fill nan to make quarter report fill the month.
     data.fillna(method='ffill', inplace=True)
 
-    # Composite-data's date is formated already.
-    if factor_name not in ["pct_chg_1m", "pct_chg_3m", "pct_chg_6m"]:
-        # Make all date format in the same way.
-        data.index = pd.to_datetime(data.index).strftime('%Y%m%d')
+    if factor_name == "industry_sw":
+        pass
 
-    return data.loc['20090131':'20190131']
+    else:
+        # Composite-data's date is formated already.
+        # There'll be a wired bug if you insist to format again. 
+        # All of the date would be "1990-01-01". 
+        if (category=="Raw") & (
+            factor_name not in [
+                "pct_chg_1m", 
+                "pct_chg_3m", 
+                "pct_chg_6m"
+            ]
+        ):
+            # Make all date format in the same way.
+            data.index = pd.to_datetime(data.index).strftime('%Y%m%d')
+        data = data.loc[start_year+'0131' : '20190131']
+    return data
 
 # %%
 
@@ -361,7 +381,6 @@ def overview(
     Return: save a 3*3 histogram distribution plot of data.
     '''
     factors_list = get_factors_list()[:9]
-    get_source_data = source_data_function
 
     plt.figure(figsize=(10, 10))
     for i, factor in zip(
@@ -370,7 +389,7 @@ def overview(
     ):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data=get_source_data(factor)
+            data=source_data_function(factor)
         ))
         plt.title(factor)
 
@@ -484,7 +503,7 @@ overview(
 # %%
 
 
-def percentile_filter(factor_name, min=0.5, max=99.5):
+def percentile_filter(factor_name, min=1.5, max=98.5):
     '''
     Parameters:
         factor_name: name of factors in Wind. (str)
@@ -516,7 +535,7 @@ overview(
 # %%
 
 
-def huge_deviation_filter_method_comparison():
+def huge_deviation_filter_method_comparison(factor_name):
     '''
     Return:
         save a histogram distribution plot of 
@@ -524,24 +543,24 @@ def huge_deviation_filter_method_comparison():
     '''
     plt.figure(figsize=(8, 5))
     sns.distplot(get_values(
-        data=Filter("pcf_ncf_ttm").original()
+        data=get_data(factor_name)
     ), label="Original")
     sns.distplot(get_values(
-        data=Filter("pcf_ncf_ttm").MAD()
+        data=MAD_filter(factor_name)
     ), label="MAD")
     sns.distplot(get_values(
-        data=Filter("pcf_ncf_ttm").three_sigma()
+        data=three_sigma_filter(factor_name)
     ), label="3σ")
     sns.distplot(get_values(
-        data=Filter("pcf_ncf_ttm").percentile_filter()
+        data=percentile_filter(factor_name)
     ), label="Percentile")
     plt.legend()
-    plt.title("不同去极值方法的比较（以每股现金流为例）")
-    plt.savefig(path + "\\H3 Plots\\Comparison(pcf_ncf_ttm).png")
+    plt.title("不同去极值方法的比较（以营业收入同比增长率为例）")
+    plt.savefig(path + "\\H3 Plots\\Comparison" + factor_name + ".png")
 
 
 # %%
-huge_deviation_filter_method_comparison()
+huge_deviation_filter_method_comparison("yoy_or")
 
 # %% [markdown]
 # 究其原因，是其原始数据的集中度就非常高，以至于不同方法去极值计算出相差甚远的阈值。（如下图：全部A股样本期内每股现金流的密度分布图👇）
@@ -557,18 +576,18 @@ def huge_deviation_original_data():
     '''
     plt.figure(figsize=(8, 5))
     sns.distplot(get_values(
-        data=Filter("pcf_ncf_ttm").original()
+        data=get_data("yoy_or")
     ), label="Percentile")
     plt.legend()
-    plt.title("每股现金流：原始数据")
-    plt.savefig(path + "\\H3 Plots\\original pcf_ncf_ttm.png")
+    plt.title("营业收入同比增长率：原始数据")
+    plt.savefig(path + "\\H3 Plots\\original yoy_or.png")
 
 
 # %%
 huge_deviation_original_data()
 
 # %% [markdown]
-# 所以经过百分位去极值后，尽管值域缩小了近6000倍，但仍然非常集中。
+# 所以经过百分位去极值后，尽管值域缩小了近1000倍，但仍然非常集中。
 # 
 # 另外，这种离差过大的数据去极值的时候还会出现一个问题：造成阈值部分出现异常高的“虚假”数据，而这也是我们不愿意看到的。（如下图：每股现金流经过约束最严格的百分位去极值处理后的分布图👇）
 
@@ -583,18 +602,18 @@ def huge_deviation_filtered_data():
     '''
     plt.figure(figsize=(8, 5))
     sns.distplot(get_values(
-        data=Filter("pcf_ncf_ttm").percentile_filter()
+        data=percentile_filter("yoy_or")
     ), label="Percentile")
     plt.legend()
-    plt.title("每股现金流：百分位去极值")
-    plt.savefig(path + "\\H3 Plots\\percentile filter pcf_ncf_ttm.png")
+    plt.title("营业收入同比增长率：百分位去极值")
+    plt.savefig(path + "\\H3 Plots\\percentile filter yoy_or.png")
 
 
 # %%
 huge_deviation_filtered_data()
 
 # %% [markdown]
-# > 注意图中 [-1000, 1000] 处异常的“突起”。
+# > 注意图中 [-50, 150] 处异常的“突起”。
 # > 
 # > 这是由于过多超出上下阈值的数据被迫调整为上下阈值，导致阈值处的数据分布特别密集。
 # 
@@ -611,20 +630,20 @@ def filter_method_comparison():
     '''
     plt.figure(figsize=(8, 5))
     sns.distplot(get_values(
-        data=Filter("assetsturn").original()
+        data=get_data("roa_ttm2")
     ), label="Original")
     sns.distplot(get_values(
-        data=Filter("assetsturn").MAD()
+        data=MAD_filter("roa_ttm2")
     ), label="MAD")
     sns.distplot(get_values(
-        data=Filter("assetsturn").three_sigma()
+        data=three_sigma_filter("roa_ttm2")
     ), label="3σ")
     sns.distplot(get_values(
-        data=Filter("assetsturn").percentile_filter()
+        data=percentile_filter("roa_ttm2")
     ), label="Percentile")
     plt.legend()
-    plt.title("不同去极值方法的比较（以资产周转率为例）")
-    plt.savefig(path + "\\H3 Plots\\Comparison(assetsturn).png")
+    plt.title("不同去极值方法的比较（以总资产净利率为例）")
+    plt.savefig(path + "\\H3 Plots\\Comparison(roa_ttm2).png")
 
 
 # %%
@@ -668,12 +687,12 @@ def standardize(factor_name):
     '''
     Parameter:
         factor_name: name of factors in Wind. (str)
-        time:the time the data start
+        start_year:the start_year the data start
     Return:
         standardized and Filtered (MAD) data. (pd.DataFrame)
     '''
-    data = Filter(factor_name, time).MAD()
-    data = data.fillna(0)
+    data = MAD_filter(factor_name)
+    # data = data.fillna(0)
     mean = np.mean(data)
     std = np.std(data)
     return (data - mean) / std
@@ -695,28 +714,6 @@ def process_and_store_data():
 # %%
 process_and_store_data()
 
-# %%
-
-
-def get_processed_data(factor_name):  # get data from disk.
-    '''
-    Parameter:
-        factor_name: name of factors in Wind. (str)
-    Return:
-        processed factor data. (pd.DataFrame)
-            index: months. (np.int64)
-            columns: stocks code list. (str)
-    '''
-    data = pd.read_csv(
-        open(
-            path + "\\H3 Data\\Processed Data\\" + factor_name + ".csv",
-            'r',  # read-only mode for data protection.
-            encoding="utf-8"
-        ),
-        index_col=[0]
-    )
-    return data
-
 # %% [markdown]
 # 
 # （如下图为经过去极值、标准化处理后的数据密度分布图一览👇）
@@ -730,7 +727,7 @@ def overview_processed_data():
     for i in range(9):
         plt.subplot(int("33" + str(i+1)))
         sns.distplot(get_values(
-            data=get_processed_data(get_factors_list()[i])
+            data=get_data(get_factors_list()[i], category="Processed")
         ))
         plt.title(get_factors_list()[i])
     plt.suptitle("经过处理后的A股因子数据密度分布图一览")
@@ -757,34 +754,12 @@ overview_processed_data()
 # %%
 
 
-def get_industry_data():
-    '''
-    Return:
-        SHENWAN industry data. (pd.DataFrame)      
-    '''
-    data = pd.read_csv(
-        open(
-            # Extract raw data.
-            # read-only mode for data protection.
-            path + "\\H3 Data\\Raw Data\\" + 'industry_sw' + ".csv", 'r',
-            encoding="utf-8"
-        ),
-        index_col=[0]
-    )
-    return data
-
-# %%
-
-
-# %%
-
-
 def get_industry_list():
     '''
     Return:
         industry list in HS300 stocks list.
     '''
-    return list(get_industry_data().iloc[:, 0].unique())
+    return list(get_data("industry_sw").iloc[:, 0].unique())
 
 # %%
 
@@ -799,16 +774,15 @@ def industry_comparison(factor_name):
             columns: factor name. (str)
     '''
     # All industry in HS300.
-    sw_industry_list = get_industry_list()
     # Use certain factor data for comparison example between industry.
-    compare_data = get_data(factor_name, '2009')
+    compare_data = get_data(factor_name, start_year='2009')
     compare_industry = pd.DataFrame(
-        index=sw_industry_list,
+        index=get_industry_list(),
         columns=[factor_name]
     )
-    for industry in sw_industry_list:
-        industry_stock_code_list = list(get_industry_data()[
-            get_industry_data().iloc[:, 0] == industry  # 此处可能会有问题
+    for industry in get_industry_list():
+        industry_stock_code_list = list(get_data("industry_sw")[
+            get_data("industry_sw").iloc[:, 0] == industry  
         ].index)
         # Some industry is not in HS300.
         try:
@@ -928,9 +902,14 @@ def get_industry_exposure(factor_name):
             index_col=[0]
         )
     else:
-        # Don't know why but different factor data has different hs300 stocks list,
+        # Don't know why but different factor data \
+        # has different hs300 stocks list,
         # so specify which factor is essential.
-        hs300_stock_list = list(get_data(factor_name, '2009').columns)
+        hs300_stock_list = list(get_data(
+            factor_name, 
+            category="Processed", 
+            start_year='2009'
+        ).columns)
         industry_exposure = pd.DataFrame(
             index=get_industry_list(),
             columns=hs300_stock_list
@@ -938,7 +917,7 @@ def get_industry_exposure(factor_name):
         for stock in hs300_stock_list:
             try:
                 industry_exposure.loc[
-                    get_industry_data().loc[
+                    get_data("industry_sw").loc[
                         stock,
                         "INDUSTRY_SW"
                     ],
@@ -954,7 +933,8 @@ def get_industry_exposure(factor_name):
 
 
 def neutralize(
-    factor_name,
+    factor_name, 
+    start_year="2009", 
     market_capital=True,
     industry=True
 ):
@@ -966,11 +946,19 @@ def neutralize(
     Return:
         neutralized data. (pd.DataFrame)
     '''
-    y = get_processed_data(factor_name).T.fillna(
-        0)  # don't know why but there's still nan.
+    # don't know why but there's still nan.
+    y = get_data(
+        factor_name, 
+        category="Processed", 
+        start_year="2009"
+    ).T.fillna(0)
     industry_dummy = get_industry_exposure(factor_name)
     if market_capital:
-        ln_market_capital = get_data("val_lnmv", '2009')
+        ln_market_capital = get_data(
+            "val_lnmv", 
+            category="Processed", 
+            start_year='2009'
+        )
         if industry:
             x = pd.concat(
                 [
@@ -978,15 +966,20 @@ def neutralize(
                     industry_dummy
                 ],
                 axis=1
-            )
+            ).T
         else:
-            x = ln_market_capital
+            x = ln_market_capital.T
     elif industry:
         x = industry_dummy.T
+    
+    x.fillna(0, inplace=True)
+    y = y.loc[x.index, :]
+    
     result = sm.OLS(
         y.astype(float),
         x.astype(float)
     ).fit()
+    
     return result.resid.T
 
 # %%
@@ -999,7 +992,7 @@ def plot_industry_neutralization(factor_name):
     '''
     plt.figure(figsize=(8, 5))
     sns.kdeplot(get_values(
-        data=get_processed_data(factor_name)
+        data=get_data(factor_name, category="Processed")
     ), label="未经中性化")
     sns.kdeplot(get_values(
         data=neutralize(
@@ -1010,11 +1003,12 @@ def plot_industry_neutralization(factor_name):
     ), label="行业中性化")
     plt.legend()
     plt.title("对" + factor_name + "进行中性化处理前后比较")
+    plt.savefig(path + "\\H3 Plots\\industry neutralization.png")
 
 # %%
 
 
-def overview_neutralization(factor_list):
+def overview_industry_neutralization(factor_list):
     '''
     Parameter:
         factor_list: list of factor names. (list)
@@ -1025,7 +1019,7 @@ def overview_neutralization(factor_list):
     for i in range(len(factor_list)):
         plt.subplot(int("22" + str(i+1)))
         sns.kdeplot(get_values(
-            data=get_processed_data(factor_list[i])
+            data=get_data(factor_list[i], category="Processed")
         ), label="未经中性化")
         sns.kdeplot(get_values(
             data=neutralize(
@@ -1035,18 +1029,69 @@ def overview_neutralization(factor_list):
             )
         ), label="行业中性化")
         plt.legend()
-        plt.title("对" + factor_list[i] + "进行中性化处理前后比较")
+        plt.title("对" + factor_list[i] + "进行行业中性化处理前后比较")
     plt.suptitle("行业中性化的典型结果")
-    plt.savefig(path + "\\H3 Plots\\overview neutralization.png")
-
+    plt.savefig(path + "\\H3 Plots\\overview industry neutralization.png")
 
 # %%
-overview_neutralization([
+overview_industry_neutralization([
     "pb_lf",
     "debttoassets",
     "assetsturn",
     "invturn"
 ])
+
+# %%
+
+
+def plot_market_neutralization(factor_name):
+    '''
+    Return: 
+        a plot of neutralization comparison.
+    '''
+    plt.figure(figsize=(8, 5))
+    sns.kdeplot(get_values(
+        data=get_data(factor_name, category="Processed")
+    ), label="未经中性化")
+    sns.kdeplot(get_values(
+        data=neutralize(
+            factor_name,
+            market_capital=True,
+            industry=False
+        )
+    ), label="市值中性化")
+    plt.legend()
+    plt.title("对" + factor_name + "进行市值中性化处理前后比较")
+    plt.savefig(path + "\\H3 Plots\\market neutralization.png")
+
+# %%
+plot_market_neutralization("pb_lf")
+
+# %%
+
+
+def plot_neutralization(factor_name):
+    '''
+    Return: 
+        a plot of neutralization comparison.
+    '''
+    plt.figure(figsize=(8, 5))
+    sns.kdeplot(get_values(
+        data=get_data(factor_name, category="Processed")
+    ), label="未经中性化")
+    sns.kdeplot(get_values(
+        data=neutralize(
+            factor_name,
+            market_capital=True,
+            industry=True
+        )
+    ), label="行业市值中性化")
+    plt.legend()
+    plt.title("对" + factor_name + "进行行业市值中性化处理前后比较")
+    plt.savefig(path + "\\H3 Plots\\industry & market neutralization.png")
+
+# %%
+plot_neutralization("pb_lf")
 
 # %% [markdown]
 # 
@@ -1083,28 +1128,6 @@ neutralize_and_store_data()
 # %%
 
 
-def get_neutralized_data(factor_name):
-    '''
-    Parameter:
-        factor_name: name of factors in Wind. (str)
-    Return:
-        neutralized factor data. (pd.DataFrame)
-            index: months. (np.int64)
-            columns: stocks code list. (str)
-    '''
-    data = pd.read_csv(
-        open(
-            path + "\\H3 Data\\Neutralized Data\\" + factor_name + ".csv",
-            'r',  # read-only mode for data protection.
-            encoding="utf-8"
-        ),
-        index_col=[0]
-    )
-    return data
-
-# %%
-
-
 def overview_after_data_processing():
     # Get an overview of data after processing.
     plt.figure(figsize=(10, 10))
@@ -1112,7 +1135,7 @@ def overview_after_data_processing():
         plt.subplot(int("33" + str(i+1)))
         factor_name = get_factors_list()[i]
         sns.distplot(get_values(
-            data=get_neutralized_data(factor_name)
+            data=get_data(factor_name, category="Neutralized")
         ))
         plt.title(factor_name)
     plt.suptitle("经过数据处理后的不同因子在A股的历史数据分布")
@@ -1170,7 +1193,7 @@ def get_group_data(factor_list):
     '''
     datadict = {}
     for i in factor_list:
-        df = get_neutralized_data(i)  # this should be the processed data
+        df = get_data(i, category="Neutralized")  # this should be the processed data
         datadict[i] = df
     panel = pd.Panel(datadict)
     return panel
@@ -1210,7 +1233,7 @@ class Large_factor_merge(object):
         Return:
             IC of Large Factor.         
         '''
-        stock_return = get_neutralized_data('pct_chg')  # This will be modified
+        stock_return = get_data(', category="Neutralized"pct_chg')  # This will be modified
         datadict = {}
         for i in self.data.items:
             df = self.data[i]
@@ -1330,14 +1353,14 @@ def get_return_data():
     return return_data
 
 
-def get_regression_data(time, type):
+def get_regression_data(start_year, type):
     # get 7+1 data list for one stock
     data = pd.DataFrame(columns=['return', 'VALUE', 'GROWTH',
                                  'PROFIT', 'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY'])
     for factor_name in ['VALUE', 'GROWTH', 'PROFIT', 'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY']:
-        data[factor_name] = get_Large_Factors(factor_name, type).loc[time]
+        data[factor_name] = get_Large_Factors(factor_name, type).loc[start_year]
 
-    data['return'] = get_return_data().loc[time]
+    data['return'] = get_return_data().loc[start_year]
     return data
 
 
@@ -1351,12 +1374,12 @@ def regression_model(y, X):
 def run_regression(type):
     time_list = get_Large_Factors('VALUE', type).index[:-1]
     param_df = pd.DataFrame(columns=time_list)
-    for time in time_list:
-        regression_data = get_regression_data(time, type)
+    for start_year in time_list:
+        regression_data = get_regression_data(start_year, type)
         y = regression_data['return']
         X = regression_data.iloc[:, 1:]
         param = regression_model(y, X)
-        param_df[time] = param
+        param_df[start_year] = param
     return param_df
 
 # run_regression('Static')==>进行回归
@@ -1385,14 +1408,14 @@ overview_Large_factors()
 # %%
 # 假设了之前很多回归的计算结果
 Factor_income = pd.DataFrame(-1+2*np.random.random((121, 9)), columns=['VALUE', 'GROWTH', 'PROFIT', 'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY', 'INDUSTRY', 'SIZE'],
-                             index=get_neutralized_data('ps_ttm').index)
+                             index=get_data(', category="Neutralized"ps_ttm').index)
 Stock_predict = pd.DataFrame(-0.1+np.random.random((300, 1))/3, columns=[
-                             'yeild_forecast'], index=get_neutralized_data('ps_ttm').columns)
+                             'yeild_forecast'], index=get_data(', category="Neutralized"ps_ttm').columns)
 Factor_predict = pd.DataFrame(-0.1+np.random.random((300, 9))/3, columns=[
-                              'VALUE', 'GROWTH', 'PROFIT', 'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY', 'INDUSTRY', 'SIZE'], index=get_neutralized_data('ps_ttm').columns)
+                              'VALUE', 'GROWTH', 'PROFIT', 'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY', 'INDUSTRY', 'SIZE'], index=get_data(', category="Neutralized"ps_ttm').columns)
 # 每只股票的在不同时间点的残差，可以等于实际的股票收益率-预测的股票收益率
-Stock_Residual = pd.DataFrame(-0.1+np.random.random((121, 300))/5, columns=get_neutralized_data(
-    'ps_ttm').columns, index=get_neutralized_data('ps_ttm').index)
+Stock_Residual = pd.DataFrame(-0.1+np.random.random((121, 300))/5, columns=get_data(
+    'ps_ttm, category="Neutralized"').columns, index=get_data(', category="Neutralized"ps_ttm').index)
 
 
 class Portfolio_Optimization(object):
