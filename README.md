@@ -265,9 +265,10 @@ data.fillna(method = 'ffill', inplace = True)
 
 可以看出数据经过处理后分布变得更加接近标准正态分布了一些。
 
-# Step 3：大类因子合成
+Step 3：大类因子合成
 
-前面两个步骤已经把风格因子的细分类因子数据经过数据处理并保存了下来，这一步把细分类因子合成为大类因子。使得最终合成后只剩下：
+前面两个步骤已经把风格因子的细分类因子数据经过数据处理并保存了下来，
+这一步把细分类因子合成为大类因子。使得最终合成后只剩下：
 
 - VALUE
 - GROWTH
@@ -279,7 +280,8 @@ data.fillna(method = 'ffill', inplace = True)
 
 这七个因子，我们的目标就是构建这七个因子的**纯因子组合**。
 
-> 从这一步开始为方便提取数据，将数据从"pandas.DataFrame"转换为"pandas.PanelData"。
+> 从这一步开始为方便提取数据，将数据从"pandas.DataFrame"
+转换为"pandas.PanelData"。
 >
 > 数据格式为：
 >
@@ -296,8 +298,7 @@ data.fillna(method = 'ffill', inplace = True)
 
 > 大类因子合成部分的：
 >
-> - 代码详见“Data_Composition.py” 文件。
-> - 数据保存在"H3 Data/Composition Data"文件夹里。
+> 数据保存在"H3 Data/Composition Data"文件夹里。
 
 # Step 4：收益预测模型
 

@@ -78,26 +78,11 @@ def get_factors_list():
     波动率提取要填开始区间和截止区间。（区间为近几个月）
     '''
     return [
-        "pe_ttm",
-        "pb_lf",
-        "pcf_ncf_ttm",
-        "ps_ttm",
-        "yoyprofit",
-        "yoy_or",
-        "yoyroe",
-        "roe_ttm2",
-        "roa_ttm2",
-        "debttoassets",
-        "assetsturn",
-        "invturn",
-        "pct_chg_1m",
-        "pct_chg_3m",
-        "pct_chg_6m",
-        "stdevry_3m",
-        "stdevry_6m",
-        "tech_turnoverrate20",
-        "tech_turnoverrate60",
-        "val_lnmv"
+        "pe_ttm", "pb_lf", "pcf_ncf_ttm", "ps_ttm",
+        "yoyprofit", "yoy_or", "yoyroe", "roe_ttm2",
+        "roa_ttm2", "debttoassets", "assetsturn", "invturn",
+        "pct_chg_1m", "pct_chg_3m", "pct_chg_6m", "stdevry_3m",
+        "stdevry_6m", "tech_turnoverrate20", "tech_turnoverrate60", "val_lnmv"
     ]
 
 # %%
@@ -109,16 +94,10 @@ def get_large_factors_list():
 
     保存大类因子指标名。
     '''
-    get_large_factors_list = [
-        'VALUE',
-        'GROWTH',
-        'PROFIT',
-        'QUALITY',
-        'MOMENTUM',
-        'VOLATILITY',
-        'LIQUIDITY',
-        'INDUSTRY',
-        'SIZE'
+    return [
+        'VALUE', 'GROWTH', 'PROFIT',
+        'QUALITY', 'MOMENTUM', 'VOLATILITY',
+        'LIQUIDITY', 'INDUSTRY', 'SIZE'
     ]
 
 # %% [markdown]
@@ -1041,6 +1020,9 @@ overview_industry_neutralization([
     "invturn"
 ])
 
+# %% [markdown]
+# 对市值进行中性化也有类似的效果。（如下图为对"pb_lf"因子进行市值中性化的结果👇）
+
 # %%
 
 
@@ -1066,6 +1048,9 @@ def plot_market_neutralization(factor_name):
 
 # %%
 plot_market_neutralization("pb_lf")
+
+# %% [markdown]
+# 同样是"pb_lf"因子，同时对市值和行业进行中性化👇，效果也是相近的。
 
 # %%
 
@@ -1148,7 +1133,8 @@ overview_after_data_processing()
 # %% [markdown]
 # Step 3：大类因子合成
 # 
-# 前面两个步骤已经把风格因子的细分类因子数据经过数据处理并保存了下来，这一步把细分类因子合成为大类因子。使得最终合成后只剩下：
+# 前面两个步骤已经把风格因子的细分类因子数据经过数据处理并保存了下来，
+# 这一步把细分类因子合成为大类因子。使得最终合成后只剩下：
 # 
 # - VALUE
 # - GROWTH
@@ -1160,7 +1146,8 @@ overview_after_data_processing()
 # 
 # 这七个因子，我们的目标就是构建这七个因子的**纯因子组合**。
 # 
-# > 从这一步开始为方便提取数据，将数据从"pandas.DataFrame"转换为"pandas.PanelData"。
+# > 从这一步开始为方便提取数据，将数据从"pandas.DataFrame"
+# 转换为"pandas.PanelData"。
 # >
 # > 数据格式为：
 # >
@@ -1177,23 +1164,21 @@ overview_after_data_processing()
 # 
 # > 大类因子合成部分的：
 # >
-# > - 代码详见“Data_Composition.py” 文件。
-# > - 数据保存在"H3 Data/Composition Data"文件夹里。
+# > 数据保存在"H3 Data/Composition Data"文件夹里。
 
 # %%
 # Turn dataframe into panel data.
 
 
-def get_group_data(factor_list):
-    '''
-    Parameter:
-        factor_list: list of factor names. (str list)
-    Return:
-        panel data of all factors data. (pd.Panel)
-    '''
+def get_group_data(factor_list, start_year="2009"):
     datadict = {}
     for i in factor_list:
-        df = get_data(i, category="Neutralized")  # this should be the processed data
+        # This should be the processed data.
+        df = get_data(
+            i, 
+            category="Neutralized", 
+            start_year=start_year
+        )  
         datadict[i] = df
     panel = pd.Panel(datadict)
     return panel
@@ -1202,38 +1187,40 @@ def get_group_data(factor_list):
 
 
 class Large_factor_merge(object):
-    '''
-    Parameters:
-        Large_factor: large factor data. (pd.Panel)
-    '''
-
     def __init__(self, Large_factor):
         if Large_factor == 'VALUE':
             list = ["pe_ttm", "pb_lf", "pcf_ncf_ttm", "ps_ttm"]
+
         elif Large_factor == 'GROWTH':
             list = ["yoyprofit", "yoy_or", "yoyroe"]
+
         elif Large_factor == 'PROFIT':
             list = ["roe_ttm2", "roa_ttm2"]
+
         elif Large_factor == 'QUALITY':
             list = ["debttoassets", "assetsturn", "invturn"]
+
         elif Large_factor == 'MOMENTUM':
             list = ['pct_chg_1m', 'pct_chg_3m', 'pct_chg_6m']
+
         elif Large_factor == 'VOLATILITY':
             list = ["stdevry_3m", "stdevry_6m"]
+
         elif Large_factor == 'LIQUIDITY':
             list = ["tech_turnoverrate60", "tech_turnoverrate20"]
-        data = get_group_data(list)
-        self.data = data
-        self.data_2009 = data_2009
+
+        self.data = get_group_data(list, "2007")
+        self.data_2009 = get_group_data(list, "2009")
         self.Large_factor = Large_factor
-    # Define the following function for you can read clearly and can acquire the data of every step.
+    # Define the following function for you can read clearly 
+    # and can acquire the data of every step.
 
     def Caculate_IC(self):
-        '''
-        Return:
-            IC of Large Factor.         
-        '''
-        stock_return = get_data(', category="Neutralized"pct_chg')  # This will be modified
+        stock_return = get_data(
+            "pct_chg_1m", 
+            category="Neutralized", 
+            start_year="2007"
+        )  # This will be modified
         datadict = {}
         for i in self.data.items:
             df = self.data[i]
@@ -1250,118 +1237,133 @@ class Large_factor_merge(object):
 
     def Factors_merge_Static(self):
         IC_Large = self.Caculate_IC()
-        weight_df = pd.DataFrame(columns=['weights'], index=self.data.items)
+        weight_df = pd.DataFrame(
+            columns=['weights'], 
+            index=self.data.items
+        )
         weight = []
         for i in IC_Large.items:
             df = IC_Large[i]
             IR = df.iloc[-24:, 0].mean()/df.iloc[-24:, 0].std()
             weight.append(IR)
-        # adjust the sum of weight to 1.0
-        weight = [x/sum(weight) for x in weight]
+        #weight = [x / sum(weight) for x in weight]  # adjust the sum of weight to 1.0
         weight_df['weights'] = weight
-        return weight_df
-
-    def Factors_merge(self):
-        '''
-        Return:
-            the merged large factor data.
-        '''
-        weight = self.Caculate_IR()
-        # I don't find more attribute for panel data for sum.
+        weight = weight_df
         Factors_sum = pd.DataFrame(
-            0, columns=self.data.minor_axis, index=self.data.major_axis)
+            0, 
+            columns=self.data_2009.minor_axis, 
+            index=self.data_2009.major_axis
+        )
         for i in self.data.items:
-            df = self.data[i]
-            new_df = df*weight.loc[i, 'weights']
+            df = self.data_2009[i]
+            new_df = df * weight.loc[i, 'weights']
+            Factors_sum = Factors_sum + new_df
+        return Factors_sum
+
+    def Factors_merge_dynamic(self):
+        IC_Large = self.Caculate_IC()
+        weight_df = pd.DataFrame(columns=IC_Large.major_axis[24:], index=IC_Large.items)
+        for i in IC_Large.items:
+            for j in range(24, len(IC_Large.major_axis)):
+                df = IC_Large[i]
+                IR = df.iloc[j - 23:j+1, 0].mean() / df.iloc[j - 23:j+1, 0].std()
+                weight_df.loc[i, IC_Large.major_axis[j]] = IR
+        #weight_df = weight_df.apply(lambda x: x / sum(x))
+        weight = weight_df
+        Factors_sum = pd.DataFrame(0, columns=self.data.minor_axis, index=weight.columns)
+        for i in self.data_2009.items:
+            df = self.data_2009[i]
+            new_df = df.mul(weight.loc[i], axis=0)
             Factors_sum = Factors_sum + new_df
         return Factors_sum
 
 # %%
 
 
-def Merge_and_store_factors():
+def Merge_and_store_factors_Dynamic():
     Factor_dict = {}
-    for i in ['VALUE', 'GROWTH', 'PROFIT', 'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY']:
-        Factor_data = Large_factor_merge(i).Factors_merge()
+    for i in ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY']:
+        Factor_data = Large_factor_merge(i).Factors_merge_dynamic()
         Factor_dict[i] = Factor_data
-        file_path = path + "\\H3 Data\\large factor data dynamic\\" + i + ".csv"
+        file_path = path + "\\H3 Data\\Large Factor Dynamic Data\\" + i + ".csv"
         Factor_data.to_csv(file_path)
     Large_factor = pd.Panel(Factor_dict)
     return Large_factor
-
-
-Large_factor = Merge_and_store_factors()
+Large_factor_dynamic = Merge_and_store_factors_Dynamic()
 # when you want to use one factor,you can edit'Large_factor[the name of the factor]'
+# %%
 
+
+def Merge_and_store_factors_Static():
+    Factor_dict = {}
+    for i in ['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY']:
+        Factor_data = Large_factor_merge(i).Factors_merge_Static()
+        Factor_dict[i] = Factor_data
+        file_path = path + "\\H3 Data\\Large Factor Static Data\\" + i + ".csv"
+        Factor_data.to_csv(file_path)
+    Large_factor = pd.Panel(Factor_dict)
+    return Large_factor
+Large_factor_Static = Merge_and_store_factors_Static()
 
 # %%
-def get_Large_Factors(factor_name):
-    '''
-    Parameter:
-        factor_name: name of factors in Wind. (str)
-    Return:
-        neutralized factor data. (pd.DataFrame)
-            index: months. (np.int64)
-            columns: stocks code list. (str)
-    '''
 
-    data = pd.read_csv(
-        open(
-            path + "\\H3 Data\\large factor data\\" + factor_name + ".csv",
-            'r',  # read-only mode for data protection.
-            encoding="utf-8"
-        ),
-        index_col=[0]
-    )
+def get_Large_Factors(factor_name, type):
+    category = "Large Factor " + type
+    data = get_data(factor_name, category=category)
     return data
 
-# %%
+#%%
 
 
-def overview_Large_factors():
+def overview_Large_factors(type):
     # Get an overview of data after processing.
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize = (10, 10))
     for i in range(7):
         plt.subplot(int("33" + str(i+1)))
-        factor_name = get_large_factors_list[i]
+        factor_name = get_large_factors_list()[i]
         sns.distplot(get_values(
-            data=get_Large_Factors(factor_name)
+            data = get_Large_Factors(factor_name,type)
         ))
         plt.title(factor_name)
-    plt.suptitle("大类因子在A股的历史数据分布("+type+' synthesis)')
-    plt.savefig(path + "\\H3 Plots\\Large Factors "+type+".png")
+    plt.suptitle("大类因子在A股的历史数据分布(" + type + ' synthesis)')
+    plt.savefig(path + "\\H3 Plots\\Large Factors "+ type +".png")
 
+# %% [markdown]
+# 合成后的大类因子数据如下图，动态权重合成👇。
 
+# %%
 overview_Large_factors('dynamic')
+
+# %% [markdown]
+# 静态权重合成👇。
+
+# %%
 overview_Large_factors('Static')
-##############################################################################################################################
+
 # %% [markdown]
 # # STEP 4
 
 # %% 多元线性回归
 
-
-def get_return_data():
-    return_data = pd.read_csv(
-        open(
-            path + '\H3 Data\Processed Data\pct_chg_1m.csv',
-            'r',  # read-only mode for data protection.
-            encoding="utf-8"
-        ),
-        index_col=[0]
-    )
-    return return_data
-
-
 def get_regression_data(start_year, type):
     # get 7+1 data list for one stock
-    data = pd.DataFrame(columns=['return', 'VALUE', 'GROWTH',
-                                 'PROFIT', 'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY'])
-    for factor_name in ['VALUE', 'GROWTH', 'PROFIT', 'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY']:
+    data = pd.DataFrame(
+        columns=[
+            'return', 'VALUE', 'GROWTH', 'PROFIT', 
+            'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY'
+        ]
+    )
+    for factor_name in [
+        'VALUE', 'GROWTH', 'PROFIT', 
+        'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY'
+    ]:
         data[factor_name] = get_Large_Factors(factor_name, type).loc[start_year]
+    
+    data['return'] = get_data("pct_chg_1m", category="Processed").loc[start_year]
 
-    data['return'] = get_return_data().loc[start_year]
     return data
+
+# %%
 
 
 def regression_model(y, X):
@@ -1369,6 +1371,8 @@ def regression_model(y, X):
     results = model.fit()
     # results.summary
     return results.params
+
+# %%
 
 
 def run_regression(type):
@@ -1384,7 +1388,8 @@ def run_regression(type):
 
 # run_regression('Static')==>进行回归
 
-# %% 估计因子预期收益，此处采用N=12的历史均值法
+# %% 
+# 估计因子预期收益，此处采用N=12的历史均值法
 
 
 def estimated_factor_expected_income(type):
@@ -1394,32 +1399,24 @@ def estimated_factor_expected_income(type):
     F_predict = pd.DataFrame(columns=F.columns)
     for i in range(N, len(time_list)):
         F_predict.loc[time_list[i]] = list(F.iloc[i-N:i].mean())
-
     return F_predict
-
-# %% 收益预测模型
-
-
-overview_Large_factors()
 
 # %% [markdown]
 # # STEP 5
 
 # %%
 # 假设了之前很多回归的计算结果
-Factor_income = pd.DataFrame(-1+2*np.random.random((121, 9)), columns=['VALUE', 'GROWTH', 'PROFIT', 'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY', 'INDUSTRY', 'SIZE'],
-                             index=get_data(', category="Neutralized"ps_ttm').index)
-Stock_predict = pd.DataFrame(-0.1+np.random.random((300, 1))/3, columns=[
-                             'yeild_forecast'], index=get_data(', category="Neutralized"ps_ttm').columns)
-Factor_predict = pd.DataFrame(-0.1+np.random.random((300, 9))/3, columns=[
-                              'VALUE', 'GROWTH', 'PROFIT', 'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY', 'INDUSTRY', 'SIZE'], index=get_data(', category="Neutralized"ps_ttm').columns)
-# 每只股票的在不同时间点的残差，可以等于实际的股票收益率-预测的股票收益率
-Stock_Residual = pd.DataFrame(-0.1+np.random.random((121, 300))/5, columns=get_data(
-    'ps_ttm, category="Neutralized"').columns, index=get_data(', category="Neutralized"ps_ttm').index)
+from scipy.optimize import minimize
+Factor_income =pd.DataFrame(-1+2*np.random.random((121,9)),columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE'],
+                            index = get_data('ps_ttm', category="Neutralized").index)
+Stock_predict = pd.DataFrame(-0.1+np.random.random((300,1))/3,columns=['yeild_forecast'],index = get_data('ps_ttm', category="Neutralized").columns)
+Factor_predict = pd.DataFrame(-0.1+np.random.random((300,9))/3,columns=['VALUE','GROWTH','PROFIT','QUALITY','MOMENTUM','VOLATILITY','LIQUIDITY','INDUSTRY','SIZE'],index = get_data('ps_ttm', category="Neutralized").columns)
+#每只股票的在不同时间点的残差，可以等于实际的股票收益率-预测的股票收益率
+Stock_Residual = pd.DataFrame(-0.1+np.random.random((121,300))/5,columns = get_data('ps_ttm', category="Neutralized").columns,index = get_data('ps_ttm', category="Neutralized").index)
 
 
 class Portfolio_Optimization(object):
-    def __init__(self, Target_factors, time_window):
+    def __init__(self, Target_factors ,time_window):
         self.Target_factors = Target_factors
         self.time_window = time_window
 
@@ -1431,7 +1428,7 @@ class Portfolio_Optimization(object):
     # 预测残差风险这一部分很复杂，用到半衰期权重和贝叶斯收缩，和波动性调整，其实不约束风险时，不用计算此项，先把框架搭起来，
     # 后面计算组合的夏普比率要用到组合方差，就要用到残差风险，后续研究我们再仔细研究这一部分具体怎么算
     def Trait_risk_forecast(self):
-        Res = pd.DataFrame(-0.1+np.random.random((300, 300))/5)
+        Res = pd.DataFrame(-0.1+np.random.random((300,300))/5)
         return Res
 
     def optimization(self):
@@ -1439,11 +1436,10 @@ class Portfolio_Optimization(object):
         Res = self.Trait_risk_forecast()
         yeild_T_1 = Stock_predict
 
-        # 非线性规划
+        #非线性规划
         x0 = np.random.rand(300)
         x0 /= sum(x0)
-        Non_target_factors = list(
-            set(get_large_factors_list) ^ set(self.Target_factors))
+        Non_target_factors = list(set(Large_Factors_list) ^ set(self.Target_factors))
         n = len(Non_target_factors)
         m = list(range(n))
         b = [0]*9
@@ -1452,26 +1448,17 @@ class Portfolio_Optimization(object):
         # 对于目标纯因子，序数取的0，即条件是重复的非目标因子约束，这里的条件数据类型是tuple，tuple不能被增加，我试过先用list添加然后转为tuple,
         # 仍然没有被成功识别，如果有更简便的方法，欢迎提出
         # 最小化的函数
-        def func(x): return -(yeild_T_1 * np.mat(x).T).sum()[0]
+        func = lambda x: -(yeild_T_1 * np.mat(x).T).sum()[0]
         cons4 = ({'type': 'eq', 'fun': lambda x: x.sum() - 1},
-                 {'type': 'ineq', 'fun': lambda x: (
-                     0.03-abs((Factor_predict[[Non_target_factors[b[0]]]]*np.mat(x).T).sum()[0]))},
-                 {'type': 'ineq', 'fun': lambda x: (
-                     0.03 - abs((Factor_predict[[Non_target_factors[b[1]]]] * np.mat(x).T).sum()[0]))},
-                 {'type': 'ineq', 'fun': lambda x: (
-                     0.03 - abs((Factor_predict[[Non_target_factors[b[2]]]] * np.mat(x).T).sum()[0]))},
-                 {'type': 'ineq', 'fun': lambda x: (
-                     0.03 - abs((Factor_predict[[Non_target_factors[b[3]]]] * np.mat(x).T).sum()[0]))},
-                 {'type': 'ineq', 'fun': lambda x: (
-                     0.03 - abs((Factor_predict[[Non_target_factors[b[4]]]] * np.mat(x).T).sum()[0]))},
-                 {'type': 'ineq', 'fun': lambda x: (
-                     0.03 - abs((Factor_predict[[Non_target_factors[b[5]]]] * np.mat(x).T).sum()[0]))},
-                 {'type': 'ineq', 'fun': lambda x: (
-                     0.03 - abs((Factor_predict[[Non_target_factors[b[6]]]] * np.mat(x).T).sum()[0]))},
-                 {'type': 'ineq', 'fun': lambda x: (
-                     0.03 - abs((Factor_predict[[Non_target_factors[b[7]]]] * np.mat(x).T).sum()[0]))},
-                 {'type': 'ineq', 'fun': lambda x: (
-                     0.03 - abs((Factor_predict[[Non_target_factors[b[8]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x:(0.03-abs((Factor_predict[[Non_target_factors[b[0]]]]*np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq', 'fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[1]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq', 'fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[2]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq', 'fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[3]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq', 'fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[4]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[5]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[6]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[7]]]] * np.mat(x).T).sum()[0]))},
+                 {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[8]]]] * np.mat(x).T).sum()[0]))},
                  )
         # 如果要添加波动性约束，条件要改为以下，我写的是限制波动小于3%
         '''cons4 = ({'type': 'eq', 'fun': lambda x: x.sum() - 1},
@@ -1487,13 +1474,13 @@ class Portfolio_Optimization(object):
                  {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[7]]]] * np.mat(x).T).sum()[0]))},
                  {'type': 'ineq','fun': lambda x: (0.03 - abs((Factor_predict[[Non_target_factors[b[8]]]] * np.mat(x).T).sum()[0]))},
                  )'''
-        c = (0, 1)
-        bnds = tuple([c]*300)  # 边界条件为0-1
-        res = minimize(func, x0, method='SLSQP',
-                       constraints=cons4, bounds=bnds)
-        Stock_weight = pd.DataFrame(
-            res.x, columns=['Portfolio Weight'], index=Stock_predict.index)
-        return Stock_weight, -res.fun
+        c = (0,1)
+        bnds = tuple([c]*300)#边界条件为0-1
+        res = minimize(func, x0, method='SLSQP', constraints=cons4,bounds = bnds)
+        Stock_weight = pd.DataFrame(res.x,columns=['Portfolio Weight'],index = Stock_predict.index)
+        return  Stock_weight, -res.fun
 
 # 目标纯因子为'VALUE','GROWTH','PROFIT'，使用历史时间段为过去32个月，仅对非目标纯因子偏离做约束条件，最大化收益，返回权重和组合收益
 #[Stock_weight,Portfolio_Return]= Portfolio_Optimization(['VALUE','GROWTH','PROFIT'],32).optimization()
+
+#%%
