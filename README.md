@@ -201,8 +201,6 @@ data.fillna(method = 'ffill', inplace = True)
 
 ![overview after data processing.png](https://storage.live.com/items/A3FA4B9C0717EA26!55328?authkey=AH5Re-C6ttiO_oc)
 
-![Before & After.png](https://storage.live.com/items/A3FA4B9C0717EA26!55414?authkey=AH5Re-C6ttiO_oc)
-
 ## 2.4 中性化
 
 ### 2.4.1 中性化研究
