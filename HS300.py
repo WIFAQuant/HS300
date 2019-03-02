@@ -21,7 +21,7 @@ import seaborn as sns                        # for plotting.
 import numpy as np                           # for numerical manipulation.
 import pandas as pd                          # for wrapping csv file.
 import os                                    # for getting working directory.
-path = "G:\\3、python源文件\多因子\新\HS300-master"                         # current working directory.
+path = os.getcwd()
 sns.set(style="darkgrid")                    # set seaborn style.
 plt.rcParams['font.sans-serif'] = ['SimHei']  # For displaying chinese.
 plt.rcParams['axes.unicode_minus'] = False   # For displaying minus sign.
@@ -931,36 +931,31 @@ def neutralize(
         factor_name, 
         category="Processed"+start_year,
         start_year=start_year
-    ).T.fillna(0)
-    industry_dummy = get_industry_exposure(factor_name)
+    ).T
+    industry_dummy = get_industry_exposure(factor_name).T.fillna(0)
     if market_capital:
         ln_market_capital = get_data(
             "val_lnmv", 
             category="Processed"+start_year,
             start_year=start_year
-        )
+        ).T
         if industry:
-            x = pd.concat(
-                [
+            x = pd.concat([
                     ln_market_capital,
                     industry_dummy
-                ],
-                axis=1
-            ).T
+                ], axis=1)
         else:
-            x = ln_market_capital.T
+            x = ln_market_capital
     elif industry:
-        x = industry_dummy.T
+        x = industry_dummy
     
     x.fillna(0, inplace=True)
-    y = y.loc[x.index, :]
+    y.fillna(0, inplace=True)
+    y = y.loc[list(x.index), :]
     
-    result = sm.OLS(
-        y.astype(float),
-        x.astype(float)
-    ).fit()
+    result = sm.OLS(y, x).fit()
     
-    return result.resid.T
+    return result.resid
 
 # %%
 
