@@ -99,8 +99,6 @@ data.fillna(method = 'ffill', inplace = True)
 
 ![Filled.png](https://storage.live.com/items/A3FA4B9C0717EA26!53794?authkey=AH5Re-C6ttiO_oc)
 
-针对剩余的缺失数据，我们将在数据[标准化](##2.3标准化)处理后统一填充为零。
-
 ## 2.2 去极值
 
 去极值的方法采用调整因子值中的离群值至指定阈值的上下限，从而减小**离群值**和**极值**对统计的偏差。
