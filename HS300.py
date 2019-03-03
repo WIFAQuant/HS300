@@ -1394,17 +1394,21 @@ def run_regression(type):
     
 
 # %% 
-# 估计因子预期收益，此处采用N=12的历史均值法
+# 方法一：估计因子预期收益，此处采用N=12的历史均值法
 
 def estimated_factor_expected_income(type):
     F = run_regression(type).get('factor_income').T
     N = 12
     time_list = get_Large_Factors('VALUE', type).dropna(axis=0,how='any'). index
     F_predict = pd.DataFrame(columns=F.columns)
-    for i in range(N, len(time_list)):
-        F_predict.loc[time_list[i]] = list(F.iloc[i-N:i].mean())
+    #for i in range(N, len(time_list)):
+    #    F_predict.loc[time_list[i]] = list(F.iloc[i-N:i].mean())
+    F_predict.loc[time_list[len(time_list)-1]] = list(F.iloc[len(time_list)-1-N:len(time_list)].mean())
     return F_predict #因为无法获取未来时间日期值，此处返回的值为index值的下一个月的预期值
  
+# 方法二：ARIMA
+def estimated_factor_expected_income_ARIMA(type):
+    F = run_regression(type).get('factor_income').T
 #%% 收益预测模型
     
 def load_of_factor(time, type): # 获得因子载荷矩阵 
@@ -1430,9 +1434,8 @@ def load_of_factor(time, type): # 获得因子载荷矩阵
     return data
 
 def calculate_expected_return(type):
-    F_predict = estimated_factor_expected_income(type)
+    f_predict = estimated_factor_expected_income(type)
     time_list = get_Large_Factors('VALUE', type).dropna(axis=0,how='any'). index
-    f_predict = F_predict.iloc[-1]
     X = load_of_factor(time_list[-1], type)
     r_predict = X.mul(f_predict,axis=1).T.sum()
     return r_predict
