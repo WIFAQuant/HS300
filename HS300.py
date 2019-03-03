@@ -871,7 +871,7 @@ def get_industry_exposure(factor_name):
     Return:
         industry exposure data. (pd.DataFrame)
     '''
-    file_path = path + "\\H3 Data\\Neutralized Data\\industry exposure " + factor_name + ".csv"
+    file_path = path + "\\H3 Data\\Neutralized2009 Data\\industry exposure " + factor_name + ".csv"
     if os.path.isfile(file_path):
         industry_exposure = pd.read_csv(
             open(
@@ -955,7 +955,7 @@ def neutralize(
     
     result = sm.OLS(y, x).fit()
     
-    return result.resid
+    return result.resid.T
 
 # %%
 
@@ -1335,66 +1335,122 @@ overview_Large_factors('dynamic')
 overview_Large_factors('Static')
 
 # %% [markdown]
-# # STEP 4
+from sklearn import metrics
 
 # %% 多元线性回归
 
-def get_regression_data(start_year, type):
-    # get 7+1 data list for one stock
+def get_regression_data(time, next_time, type):
+    # get 7(大类)+1（market）+28（行业）+1（return） data list for one stock
     data = pd.DataFrame(
         columns=[
             'return', 'VALUE', 'GROWTH', 'PROFIT', 
-            'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY'
+            'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY',
+            'market'
         ]
     )
+    
     for factor_name in [
         'VALUE', 'GROWTH', 'PROFIT', 
         'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY'
     ]:
-        data[factor_name] = get_Large_Factors(factor_name, type).loc[start_year]
+        data[factor_name] = get_Large_Factors(factor_name, type).loc[time]
+        
+    data['market'] = get_data("val_lnmv", category="Processed", start_year="2009").T[time]
+    data['return'] = get_data("pct_chg_1m", category="raw").loc[next_time]    
     
-    data['return'] = get_data("pct_chg_1m", category="raw").loc[start_year]
-
+    industry_factor = get_industry_exposure('pb_lf').T    
+    data = data.join(industry_factor)
+    
     return data
-
-# %%
 
 
 def regression_model(y, X):
     model = sm.WLS(y, X)  # 加权最小二乘法 解决异方差性
     results = model.fit()
     # results.summary
-    return results.params
-
-# %%
+    return {'beta': results.params, 'R^2': results.rsquared}
 
 
+# %% 进行回归 获得因子收益矩阵和R^2
+#
 def run_regression(type):
-    time_list = get_Large_Factors('VALUE', type).index[:-1]
-    param_df = pd.DataFrame(columns=time_list)
-    for start_year in time_list:
-        regression_data = get_regression_data(start_year, type)
+    time_list = get_Large_Factors('VALUE', type).dropna(axis=0,how='any'). index
+    param_df = pd.DataFrame(columns = time_list[1:])
+    R2_temp = []
+
+    for i in range(0,len(time_list)-1):
+        regression_data = get_regression_data(time_list[i],time_list[i+1],type)
+        regression_data = regression_data.dropna(axis=0,how='any') 
         y = regression_data['return']
-        X = regression_data.iloc[:, 1:]
-        param = regression_model(y, X)
-        param_df[start_year] = param
-    return param_df
+        X = regression_data.iloc[:,1:]
+        param = regression_model(y,X).get('beta')
+        R2_temp = R2_temp + [regression_model(y,X).get('R^2')]
+        param_df[time_list[i+1]] = param
+        
+    R2_list = pd.Series(R2_temp,index = time_list[1:])
+    return {'factor_income': param_df, 'R^2': R2_list}
 
 # run_regression('Static')==>进行回归
+    
 
 # %% 
 # 估计因子预期收益，此处采用N=12的历史均值法
 
-
 def estimated_factor_expected_income(type):
-    F = run_regression(type).T
+    F = run_regression(type).get('factor_income').T
     N = 12
-    time_list = get_Large_Factors('VALUE', type).index
+    time_list = get_Large_Factors('VALUE', type).dropna(axis=0,how='any'). index
     F_predict = pd.DataFrame(columns=F.columns)
     for i in range(N, len(time_list)):
         F_predict.loc[time_list[i]] = list(F.iloc[i-N:i].mean())
-    return F_predict
+    return F_predict #因为无法获取未来时间日期值，此处返回的值为index值的下一个月的预期值
+ 
+#%% 收益预测模型
+    
+def load_of_factor(time, type): # 获得因子载荷矩阵 
+    data = pd.DataFrame(
+        columns=[
+             'VALUE', 'GROWTH', 'PROFIT', 
+            'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY',
+            'market'
+        ]
+    )
+    
+    for factor_name in [
+        'VALUE', 'GROWTH', 'PROFIT', 
+        'QUALITY', 'MOMENTUM', 'VOLATILITY', 'LIQUIDITY'
+    ]:
+        data[factor_name] = get_Large_Factors(factor_name, type).loc[time]
+        
+    data['market'] = get_data("val_lnmv", category="Processed", start_year="2009").T[time] 
+    
+    industry_factor = get_industry_exposure('pb_lf').T    
+    data = data.join(industry_factor)
+            
+    return data
 
+def calculate_expected_return(type):
+    F_predict = estimated_factor_expected_income(type)
+    time_list = get_Large_Factors('VALUE', type).dropna(axis=0,how='any'). index
+    f_predict = F_predict.iloc[-1]
+    X = load_of_factor(time_list[-1], type)
+    r_predict = X.mul(f_predict,axis=1).T.sum()
+    return r_predict
+    
+def evaluate_model(type):
+    # 20190228的股票收益真实值
+    real_return_data = pd.read_csv(open(path + "\\H3 Data\\Raw Data\\20190228pct_chg_1m.csv",'r',encoding="utf-8"), index_col=[0])
+    predict_return_data = calculate_expected_return(type).to_frame()
+    #stock code顺序不同 故合并
+    data = real_return_data.join(predict_return_data)   
+    ## 画图
+    plt.plot(data)
+    plt.plot(data[0]/data['return'])
+    MSE = metrics.mean_squared_error(data['return'],data[0])
+    RMSE = np.sqrt(MSE)
+    return {'MSE': MSE, 'RMSE': RMSE}
+
+# evaluate_model('Static')
 # %% [markdown]
 # # STEP 5
 
