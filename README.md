@@ -378,9 +378,11 @@ R2|静态权重|动态权重
 MSE值（均方差）| 0.067
 RMSE值（均方根）| 0.259.
 
-预测值与真实值之比如图：
+预测值与真实值对比如图：
 
 ![yhat_y.png](https://storage.live.com/items/A3FA4B9C0717EA26!55964?authkey=AH5Re-C6ttiO_oc)
+
+预测值与真实值之比如图：
 
 ![yhat_div_y.png](https://storage.live.com/items/A3FA4B9C0717EA26!55965?authkey=AH5Re-C6ttiO_oc)
 
