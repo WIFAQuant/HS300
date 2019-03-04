@@ -1545,3 +1545,5 @@ def get_optimization_result(Target_factors ,time_window,type):
     Stock_weight['Portfolio Return'] = np.nan
     Stock_weight.iloc[0,-1] = Portfolio_Return
     Stock_weight.to_csv(path + "\\H3 Data\\Portfolio result\\ "+str(Target_factors)+"纯因子("+str(type)+").csv")
+
+# example
