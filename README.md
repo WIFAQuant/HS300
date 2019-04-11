@@ -82,7 +82,7 @@ Ln_MarketValue|VAL_LNMV|对数市值
 
 如图为作为例子选取的沪深300的9个因子暴露数据在2005~2018年的分布统计图。👇
 
-![overview.png](https://storage.live.com/items/A3FA4B9C0717EA26!53613?authkey=AH5Re-C6ttiO_oc)
+![不同因子在A股的历史数据分布.png](https://i.loli.net/2019/04/11/5caf29dd1eb09.png)
 
 从图中可以看出绝大多数因子都存在极差过大、分布不均的现象。
 而这样的数据会影响到统计分析的结果，所以需要对数据进行处理。
@@ -97,11 +97,11 @@ data.fillna(method = 'ffill', inplace = True)
 
 填补前：
 
-![Pre Filled.png](https://storage.live.com/items/A3FA4B9C0717EA26!53793?authkey=AH5Re-C6ttiO_oc)
+![Pre Filled.png](https://i.loli.net/2019/04/11/5caf29dd6305b.png)
 
 填补后：
 
-![Filled.png](https://storage.live.com/items/A3FA4B9C0717EA26!53794?authkey=AH5Re-C6ttiO_oc)
+![Filled.png](https://i.loli.net/2019/04/11/5caf29dd61d93.png)
 
 ## 2.2 去极值
 
@@ -127,7 +127,7 @@ data.fillna(method = 'ffill', inplace = True)
 
 经过3σ法去极值后的因子数据概览如下：
 
-![3σ法去极值后.png](https://storage.live.com/items/A3FA4B9C0717EA26!55323?authkey=AH5Re-C6ttiO_oc)
+![3σ法去极值后.png](https://i.loli.net/2019/04/11/5caf29dd7040f.png)
 
 ### 2.2.3 百分位法
 
@@ -135,7 +135,7 @@ data.fillna(method = 'ffill', inplace = True)
 
 经过百分位法去极值后的因子数据概览如下：
 
-![百分位法去极值后.png](https://storage.live.com/items/A3FA4B9C0717EA26!55324?authkey=AH5Re-C6ttiO_oc)
+![百分位法去极值后.png](https://i.loli.net/2019/04/11/5caf29dd7d22a.png)
 
 ### 2.2.4 去极值研究。
 
@@ -143,17 +143,17 @@ data.fillna(method = 'ffill', inplace = True)
 
 以<u>营业收入同比增长率</u>为例，将原始数据和三种去极值的方法处理后的因子数据放在同一张图里，由于值域相差太大，甚至根本无法从图中找到不同的方法对应的图表。（如下图：分别采用三种去极值方法处理后的每股现金流数据与其原始数据图👇）
 
-![Comparisonyoy_or.png](https://storage.live.com/items/A3FA4B9C0717EA26!55325?authkey=AH5Re-C6ttiO_oc)
+![Comparisonyoy_or.png](https://i.loli.net/2019/04/11/5caf29dd5e7da.png)
 
 究其原因，是其原始数据的集中度就非常高，以至于不同方法去极值计算出相差甚远的阈值。（如下图：全部A股样本期内营业收入同比增长率的密度分布图👇）
 
-![original yoy_or.png](https://storage.live.com/items/A3FA4B9C0717EA26!55326?authkey=AH5Re-C6ttiO_oc)
+![original yoy_or.png](https://i.loli.net/2019/04/11/5caf29dd5da07.png)
 
 所以经过百分位去极值后，尽管值域缩小了近100倍，但仍然非常集中。
 
 （如下图：营业收入同比增长率经过约束最严格的百分位去极值处理后的分布图👇）
 
-![percentile filter yoy_or.png](https://storage.live.com/items/A3FA4B9C0717EA26!55327?authkey=AH5Re-C6ttiO_oc)
+![percentile filter yoy_or.png](https://i.loli.net/2019/04/11/5caf29dd5ff1c.png)
 
 另外，这种离差过大的数据去极值的时候还会出现一个问题：造成阈值部分出现异常高的“虚假”数据，而这也是我们不愿意看到的。
 
@@ -197,11 +197,6 @@ data.fillna(method = 'ffill', inplace = True)
 > - 2.3标准化
 >
 > 的数据处理后的数据保存在"H3 Data/Processed Data"文件夹里。
->
-
-（如下图为经过以上数据处理步骤后的数据密度分布图一览👇）
-
-![overview after data processing.png](https://storage.live.com/items/A3FA4B9C0717EA26!55328?authkey=AH5Re-C6ttiO_oc)
 
 ## 2.4 中性化
 
@@ -241,7 +236,7 @@ data.fillna(method = 'ffill', inplace = True)
 
 沪深300股票指数中共包含17个行业（根据申万一级行业分类），分别统计沪深300指数中各行业四个指标的平均值，结果如下图所示👇。
 
-![Industry Comparison.png](https://storage.live.com/items/A3FA4B9C0717EA26!53898?authkey=AH5Re-C6ttiO_oc)
+![Industry Comparison.png](https://i.loli.net/2019/04/11/5caf2ac887307.png)
 
 > 本例中选取的四个指标：
 >
@@ -260,7 +255,7 @@ data.fillna(method = 'ffill', inplace = True)
 
 （如下图，为选取四个因子指标进行行业中性化前后的结果，以展示行业中性化的一般结果👇，可以看出行业中性化之后，数据的分布更均匀、更接近均值）
 
-![overview industry neutralization.png](https://storage.live.com/items/A3FA4B9C0717EA26!55329?authkey=AH5Re-C6ttiO_oc)
+![overview industry neutralization.png](https://i.loli.net/2019/04/11/5caf2ac90c07c.png)
 
 ### 2.4.3 市值中性化
 
@@ -270,13 +265,13 @@ data.fillna(method = 'ffill', inplace = True)
 
 对市值进行中性化也有与行业中性化类似的效果。（如下图为对"pb_lf"因子进行市值中性化的结果👇）
 
-![market neutralization.png](https://storage.live.com/items/A3FA4B9C0717EA26!55330?authkey=AH5Re-C6ttiO_oc)
+![market neutralization.png](https://i.loli.net/2019/04/11/5caf2ac85f411.png)
 
 ### 2.4.4 行业、市值中性化
 
 同样是"pb_lf"因子，同时对市值和行业进行中性化👇，效果也是相近的。
 
-![industry & market neutralization.png](https://storage.live.com/items/A3FA4B9C0717EA26!55331?authkey=AH5Re-C6ttiO_oc)
+![industry & market neutralization.png](https://i.loli.net/2019/04/11/5caf2ac860fda.png)
 
 > 经过中性化处理后的数据保存在"H3 Data/Neutralized Data"文件夹里。
 >
@@ -285,11 +280,11 @@ data.fillna(method = 'ffill', inplace = True)
 
 （经过所有数据处理步骤后的因子数据密度分布图一览👇）
 
-![overview after data processing.png](https://storage.live.com/items/A3FA4B9C0717EA26!55328?authkey=AH5Re-C6ttiO_oc)
+![overview after data processing.png](https://i.loli.net/2019/04/11/5caf2ac863ebd.png)
 
 可以看出数据经过处理后分布变得更加接近标准正态分布了一些。
 
-![Before & After.png](https://storage.live.com/items/A3FA4B9C0717EA26!55414?authkey=AH5Re-C6ttiO_oc)
+![Before & After.png](https://i.loli.net/2019/04/11/5caf2ac976fe8.png)
 
 # Step 3：大类因子合成
 
@@ -347,7 +342,7 @@ data.fillna(method = 'ffill', inplace = True)
 为解决异方差性，使用了WLS加权最小二乘法进行回归。
 每次回归的R2如下，可以看出模型的解释性较好。
 
-![R_square.png](https://storage.live.com/items/A3FA4B9C0717EA26!55963?authkey=AH5Re-C6ttiO_oc)
+![R_square.png](https://i.loli.net/2019/04/11/5caf2b9ee593b.png)
 
 R2|静态权重|动态权重
 :--|:--:|:--:|
@@ -382,15 +377,15 @@ RMSE值（均方根）| 0.259.
 
 预测值与真实值对比如图：
 
-![yhat_y.png](https://storage.live.com/items/A3FA4B9C0717EA26!55964?authkey=AH5Re-C6ttiO_oc)
+![yhat_y.png](https://i.loli.net/2019/04/11/5caf2bc137c47.png)
 
 预测值与真实值之比如图：
 
-![yhat_div_y.png](https://storage.live.com/items/A3FA4B9C0717EA26!55965?authkey=AH5Re-C6ttiO_oc)
+![yhat_div_y.png](https://i.loli.net/2019/04/11/5caf2bc0daa70.png)
 
 我们发现问题在于使用历史因子收益平均值作为预测值时，正负值进行平均后估计值接近0，如图为最近一月的因子收益与最近12月因子收益平均值对比图：
 
-![factor_income_decrease.png](https://storage.live.com/items/A3FA4B9C0717EA26!55966?authkey=AH5Re-C6ttiO_oc)
+![factor_income_decrease.png](https://i.loli.net/2019/04/11/5caf2bc0df0e5.png)
 
 因此我们采取单独的预测模型对其进行预测，此处采用ARIMA模型。
 
@@ -398,7 +393,7 @@ RMSE值（均方根）| 0.259.
 
 如图为前三个因子的趋势图以及ACF和PACF
 
-![overview123.PNG](https://storage.live.com/items/A3FA4B9C0717EA26!56032?authkey=AH5Re-C6ttiO_oc)
+![overview123.PNG](https://i.loli.net/2019/04/11/5caf2bc371280.png)
 
 各因子ADF  test如下表
 
